@@ -26,10 +26,10 @@ class OrderMarker extends OrderModifier {
 	}
 
 	public static $singular_name = "Order Marker";
-		function i18n_single_name() { return _t("ModifierExample.ORDERMARKER", "Modifier Marker");}
+		function i18n_single_name() { return _t("OrderMarker.ORDERMARKER", "Modifier Marker");}
 
 	public static $plural_name = "Order Markers";
-		function i18n_plural_name() { return _t("ModifierExample.ORDERMARKERS", "Modifier Markers");}
+		function i18n_plural_name() { return _t("OrderMarker.ORDERMARKERS", "Modifier Markers");}
 
 // ######################################## *** other (non) static variables (e.g. protected static $special_name_for_something, protected $order)
 
@@ -57,18 +57,19 @@ class OrderMarker extends OrderModifier {
 
 	function getModifierForm($controller) {
 		$fields = new FieldSet();
-		$fields->push(new TextField('OrderFor', "enter name or code for this order", $this->MyField));
+		$fields->push(new TextField('OrderFor', "enter name or code for this order", $this->OrderFor));
+		$fields->push(new LiteralField('OrderForConfirmation', "<div><div id=\"OrderForConfirmation\" class=\"middleColumn\"></span></div>"));
 		$validator = new RequiredFields(array("OrderFor"));
 		$actions = new FieldSet(
-			new InlineFormAction('submit', 'Update Order')
+			new FormAction('submit', 'Update Order')
 		);
-		return new OrderMarker_Form($controller, 'ModifierExample', $fields, $actions, $validator);
+		return new OrderMarker_Form($controller, 'OrderMarker', $fields, $actions, $validator);
 	}
 
 // ######################################## *** template functions (e.g. ShowInTable, TableTitle, etc...) ... USES DB VALUES
 
 	public function ShowInTable() {
-		return false;
+		return true;
 	}
 	public function CanBeRemoved() {
 		return false;
@@ -115,9 +116,9 @@ class OrderMarker_Form extends OrderModifierForm {
 		foreach($modifiers as $modifier) {
 			if (get_class($modifier) == 'OrderMarker') {
 				if(isset($data['OrderFor'])) {
-					$modifier->updateOrder(Convert::raw2sql($data["OrderFor"]));
+					$modifier->updateOrderFor(Convert::raw2sql($data["OrderFor"]));
 					$modifier->write();
-					return ShoppingCart::singleton()->setMessageAndReturn(_t("OrderMarker.UPDATED", "Order marker saved"), "good");
+					return ShoppingCart::singleton()->setMessageAndReturn(_t("OrderMarker.UPDATED", "Order saved as '".Convert::raw2xml($data["OrderFor"]))."'.", "good");
 				}
 			}
 		}

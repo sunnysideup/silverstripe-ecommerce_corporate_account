@@ -19,7 +19,7 @@ var OrderMarkerModifier = {
 			dataType: "json"
 		};
 		jQuery(OrderMarkerModifier.formSelector).ajaxForm(options);
-		jQuery(OrderMarkerModifier.formSelector + " " + OrderMarkerModifier.actionsClass).hide();
+		jQuery(OrderMarkerModifier.formSelector + " " + OrderMarkerModifier.actionsSelector).hide();
 		jQuery(OrderMarkerModifier.formSelector+ " input").change(
 			function() {
 				jQuery(OrderMarkerModifier.formSelector).submit();
@@ -37,6 +37,7 @@ var OrderMarkerModifier = {
 	showResponse: function (responseText, statusText)  {
 		jQuery(OrderMarkerModifier.formSelector).removeClass(OrderMarkerModifier.loadingClass);
 		EcomCart.setChanges(responseText);
+		jQuery("#OrderForConfirmation").html(jQuery('tr.cartMessage td span').text());
 	}
 
 }
