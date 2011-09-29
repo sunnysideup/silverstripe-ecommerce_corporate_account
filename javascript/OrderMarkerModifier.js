@@ -12,6 +12,8 @@ var OrderMarkerModifier = {
 
 	actionsSelector: ".Actions",
 
+	loadingClass: "loading",
+
 	init: function() {
 		var options = {
 			beforeSubmit:  OrderMarkerModifier.showRequest,  // pre-submit callback
