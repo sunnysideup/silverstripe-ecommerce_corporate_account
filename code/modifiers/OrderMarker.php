@@ -3,11 +3,9 @@
 /**
  * @author Nicolaas [at] sunnysideup.co.nz
  * @package: ecommerce
- * @sub-package: ecommerce_delivery
- * @description: Shipping calculation scheme based on SimpleShippingModifier.
- * It lets you set fixed shipping costs, or a fixed
- * cost for each region you're delivering to.
+ * @sub-package: ecommerce_corporate_account
  */
+
 class OrderMarker extends OrderModifier {
 
 // ######################################## *** model defining static variables (e.g. $db, $has_one)
@@ -15,8 +13,6 @@ class OrderMarker extends OrderModifier {
 	public static $db = array(
 		"OrderFor" => "Varchar",
 	);
-
-	public static $defaults = array("Type" => "Chargeable");
 
 // ######################################## *** cms variables + functions (e.g. getCMSFields, $searchableFields)
 

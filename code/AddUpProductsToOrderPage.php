@@ -68,9 +68,9 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 					list($className, $id) = $explodeArray ;
 					if(class_exists($className)) {
 						$id = intval($id);
-						$qty = intval($_REQUEST["qty_$i"]);
-						if($qty) {
-							if($buyable = DataObject::get_by_id($className, $id)) {
+						if($buyable = DataObject::get_by_id($className, $id)) {
+							$qty = round($_REQUEST["qty_$i"], $buyable->QuantityDecimals());
+							if($qty) {
 								$buyable->Qty = 0;
 								$array[$i] = array(
 									"Name" => Convert::raw2sql($_REQUEST["name_$i"]),
@@ -147,17 +147,26 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 					$sc->addBuyable($buyable, $buyable->Qty);
 				}
 				$checkoutPage = DataObject::get_one("CheckoutPage");
+				$html = $this->customise(array("Message" => "", "BuyableSummary" => $buyableSummaryDos, "NameSummary" => $nameSummaryDos))->renderWith("AddProductsToOrderResultsAjax");
+				die($html);
+				$modifier = DataObject::get_one("AddUpProductsToOrderPageModifier", "OrderID = ".ShoppingCart::current_order()->ID);
+				$modifier->AddUpProductsToOrderPageNotes = $html;
+				$modifier->write();
 				Session::clear("AddProductsToOrderRows");
 				Session::save();
-				$msg = "Products added to cart ...<a href=\"".$checkoutPage->Link()."\">continue to ".$checkoutPage->Title."</a>.
-				<script type=\"text/javascript\">window.location(www.cnn.com)</script>";
+				$msg = "Entries updated.";
 			}
 			else {
-				$msg = "No products added";
+				$msg = "No products added.";
 			}
 		}
 		else {
-			$msg = "Entries updated";
+			if($buyableSummaryDos){
+				$msg = "Entries updated.";
+			}
+			else {
+					$msg = "No products added.";
+			}
 		}
 		return $this->customise(array("Message" => $msg, "BuyableSummary" => $buyableSummaryDos, "NameSummary" => $nameSummaryDos))->renderWith("AddProductsToOrderResultsAjax");
 	}

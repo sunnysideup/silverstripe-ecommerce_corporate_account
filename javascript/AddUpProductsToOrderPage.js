@@ -75,7 +75,7 @@ var AddUpProductsToOrderPage = {
 				jQuery(".qty input").live(
 					"change",
 					function(){
-						var val = parseInt(jQuery(this).val());
+						var val = parseFloat(jQuery(this).val());
 						if(!val) {
 							jQuery(this).val(0);
 							jQuery(this).addClass("toBeCompleted");
@@ -144,7 +144,7 @@ var AddUpProductsToOrderPage = {
 	updateRows: function ()  {
 		for(var i = 0; i < this.rowNumbers; i++) {
 			var price = parseFloat(jQuery("#Buyable_"+i+" select option:selected").attr("rel"));
-			var qty = parseInt(jQuery("#Qty_"+i+" input").val());
+			var qty = parseFloat(jQuery("#Qty_"+i+" input").val());
 			var total = Math.round((qty * price * 100))/100;
 			if(total && total != NaN && total > 0) {
 				jQuery("#Total_"+i).text("$" +total)
