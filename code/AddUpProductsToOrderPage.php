@@ -17,10 +17,13 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 
 	function init(){
 		parent::init();
+		Requirements::themedCSS("AddUpProductsToOrderPage");
 		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
 		Requirements::javascript(THIRDPARTY_DIR."/jquery-form/jquery.form.js");
 		Requirements::javascript("ecommerce_corporate_account/javascript/AddUpProductsToOrderPage.js");
 		Requirements::customScript("AddUpProductsToOrderPage.setRowNumbers(".$this->RowNumbers().");", "setRowNumbers");
+		$checkoutPage = DataObject::get_one("CheckoutPage");
+		Requirements::customScript("AddUpProductsToOrderPage.setCheckoutLink('".$checkoutPage->Link()."');", "setCheckoutLink");
 	}
 
 	protected $rowNumbers = 1;
@@ -56,62 +59,107 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 	}
 
 	function submit($request){
-		$this->rowNumbers = intval($_REQUEST["rowNumbers"]) + 1;
+		$this->rowNumbers = intval($_REQUEST["rowNumbers"]);
 		$array = array();
-		for($i = 0 ; $i < $this->rowNumbers; $i++){
+		for($i = 0 ; $i <= $this->rowNumbers; $i++){
 			if(isset($_REQUEST["buyable_$i"])) {
-				list($className, $id) = explode("_", $_REQUEST["buyable_$i"]);
-				if(class_exists($className)) {
-					if($buyable = DataObject::get_by_id($className, intval($id))) {
-						$array[$i] = array(
-							"Name" => $_REQUEST["name_$i"],
-							"Qty" => $_REQUEST["qty_$i"],
-							"BuyableClassNameAndID" => $_REQUEST["buyable_$i"],
-							"ClassName" => $className,
-							"ID" => $id,
-							"Buyable" => $buyable
-						);
+				$explodeArray = explode("_", $_REQUEST["buyable_$i"]);
+				if(is_array($explodeArray) && count($explodeArray) == 2) {
+					list($className, $id) = $explodeArray ;
+					if(class_exists($className)) {
+						$id = intval($id);
+						$qty = intval($_REQUEST["qty_$i"]);
+						if($qty) {
+							if($buyable = DataObject::get_by_id($className, $id)) {
+								$buyable->Qty = 0;
+								$array[$i] = array(
+									"Name" => Convert::raw2sql($_REQUEST["name_$i"]),
+									"Qty" => $qty,
+									"BuyableClassNameAndID" => $className."_".$id,
+									"ClassName" => $className,
+									"ID" => $id,
+									"Buyable" => $buyable
+								);
+							}
+						}
 					}
 				}
 			}
-			if(!isset($array[$i])) {
-				$array[$i] = array(
-					"Name" => "",
-					"Qty" => 0,
-					"BuyableClassNameAndID" => 0,
-					"ClassName" => "",
-					"ID" => 0,
-					"Buyable" => null
-				);
-			}
 		}
+
 		Session::set("AddProductsToOrderRows", serialize($array));
-		$summaryDos = new DataObjectSet();
-		$summaryArray = array();
-		if($array) {
+
+		$buyableSummaryDos = null;
+		$nameSummaryDos = null;
+		$nameArray = array();
+		if(is_array($array)) {
 			if(count($array)) {
+				$buyableSummaryDos = new DataObjectSet();
 				foreach($array as $arrayInner) {
 					if(isset($arrayInner["Buyable"]) && $arrayInner["Buyable"]) {
+						$name = $arrayInner["Name"];
 						$className = $arrayInner["ClassName"];
-						if(!isset($summaryArray[$className])) {
-							$summaryArray[$className] = array();
-						}
 						$id = $arrayInner["ID"];
 						$qty = $arrayInner["Qty"];
 						$buyable = $arrayInner["Buyable"];
-						if(isset($summaryArray[$className.$id])) {
-							$buyable->Qty = $buyable->Qty + $qty;
+						//quantity
+						$buyable->Qty = $buyable->Qty + $qty;
+						$buyableSummaryDos->push($buyable, $className.$id);
+						// by name
+						if(!isset($nameArray[$name])) {
+							$nameArray[$name] = new DataObject();
+							$nameArray[$name]->SumTotalCalculation = 0;
+							$nameArray[$name]->Name = $name;
+							$quantitiesArray[$name] = array();
+							$nameArray[$name]->quantitiesArray = Array();
+							$nameArray[$name]->Buyables = new DataObjectSet();
 						}
-						else {
-							$summaryArray[$className.$id] = true;
-							$buyable->Qty = $qty;
-							$summaryDos->push($buyable);
+						$price = $buyable->getCalculatedPrice();
+						$itemTotalCalculation = $price * $qty;
+
+						$nameArray[$name]->SumTotalCalculation += $itemTotalCalculation;
+						$sumTotal = DBField::create("Currency", $nameArray[$name]->SumTotalCalculation, "sumTotal".$name.$className.$id)->Nice();
+						$nameArray[$name]->SumTotal = $sumTotal;
+						if(!isset($quantitiesArray[$name][$className.$id])) {
+							$quantitiesArray[$name][$className.$id] = 0;
 						}
+						$quantitiesArray[$name][$className.$id] += $qty;
+						$do = new DataObject();
+						$do->Buyable = $buyable;
+						$do->Qty += $quantitiesArray[$name][$className.$id];
+						$do->Price = DBField::create("Currency", $price, "itemPrice".$name.$className.$id)->Nice();
+						$do->ItemTotal =  DBField::create("Currency", $quantitiesArray[$name][$className.$id] * $price, "itemTotal".$name.$className.$id)->Nice();
+						$nameArray[$name]->Buyables->push($do, $buyable->ID);
 					}
 				}
 			}
 		}
-		return $this->customise(array("Summary" => $summaryDos))->renderWith("AddProductsToOrderResultsAjax");
+		if(is_array($nameArray) && count($nameArray) ) {
+			$nameSummaryDos = new DataObjectSet();
+			foreach($nameArray as $nameDo) {
+				$nameSummaryDos->push($nameDo);
+			}
+		}
+		if(isset($_REQUEST["submit"])) {
+			if($buyableSummaryDos){
+				$sc = ShoppingCart::singleton();
+				foreach($buyableSummaryDos as $buyable) {
+					$sc->addBuyable($buyable, $buyable->Qty);
+				}
+				$checkoutPage = DataObject::get_one("CheckoutPage");
+				Session::clear("AddProductsToOrderRows");
+				Session::save();
+				$msg = "Products added to cart ...<a href=\"".$checkoutPage->Link()."\">continue to ".$checkoutPage->Title."</a>.
+				<script type=\"text/javascript\">window.location(www.cnn.com)</script>";
+			}
+			else {
+				$msg = "No products added";
+			}
+		}
+		else {
+			$msg = "Entries updated";
+		}
+		return $this->customise(array("Message" => $msg, "BuyableSummary" => $buyableSummaryDos, "NameSummary" => $nameSummaryDos))->renderWith("AddProductsToOrderResultsAjax");
 	}
 
 	function addrow($request){
@@ -122,6 +170,12 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 
 	function RowNumbers(){
 		return $this->rowNumbers;
+	}
+
+	function reset() {
+		Session::clear("AddProductsToOrderRows");
+		Session::save();
+		Director::redirectBack();
 	}
 
 }

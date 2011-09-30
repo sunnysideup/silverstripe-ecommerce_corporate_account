@@ -1,10 +1,10 @@
 <tr>
 	<td class="name" id="Name_$RowNumber" >
-		<input type="text"name="name_$RowNumber">
+		<input type="text"name="name_$RowNumber" value="$Name">
 	</td>
 	<td class="buyable" id="Buyable_$RowNumber">
 		<select name="buyable_$RowNumber"  rel="$BuyableClassNameAndID">
-			<option value="0">-- select product --</option>
+			<option value="0" selected="selected">-- select product --</option>
 		<% control Buyables %>
 			<option value="{$ClassName}_{$ID}" rel="$CalculatedPrice">$Title @ $CalculatedPrice.Nice</option>
 		<% end_control %>

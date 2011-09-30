@@ -11,18 +11,28 @@ var AddUpProductsToOrderPage = {
 	rowNumbers: 1,
 		setRowNumbers: function(i) {this.rowNumbers = i;},
 
+	CheckoutLink: "",
+		setCheckoutLink: function(s) {this.CheckoutLink = s;},
+
+	goToCheckoutLink: false,
+
 	init: function() {
+		AddUpProductsToOrderPage.setDefaultSelectValue();
+
+		//add a row function
 		jQuery(".addProductsToOrderAddRows a").live(
 			"click",
 			function() {
 				AddUpProductsToOrderPage.rowNumbers++;
-				jQuery("input[name='rowNumbers']").val(AddUpProductsToOrderPage.rowNumbers++);
+				jQuery("input[name='rowNumbers']").val(AddUpProductsToOrderPage.rowNumbers);
 				url = jQuery(this).attr("href");
 				jQuery.ajax({
-					url: url,
-					data: {rowNumbers: AddUpProductsToOrderPage.rowNumbers},
+					url: url+"?flush=1",
+					data: {rowNumbers: AddUpProductsToOrderPage.rowNumbers, flush: 1},
 					success: function(data) {
-						jQuery('#AddProductsToOrderRowsTable tbody tr:last').after(data);
+						jQuery('#AddProductsToOrderRowsTable tbody').append(data);
+						AddUpProductsToOrderPage.setDefaultSelectValue();
+						AddUpProductsToOrderPage.updateRows();
 					},
 					dataType: "html"
 				});
@@ -51,7 +61,7 @@ var AddUpProductsToOrderPage = {
 					"change",
 					function(){
 						var val = jQuery(this).val();
-						if(val.length == 0) {
+						if(val.length == 0 || val == 0 || !val) {
 							jQuery(this).addClass("toBeCompleted");
 							jQuery(this).removeClass("completed");
 						}
@@ -65,37 +75,31 @@ var AddUpProductsToOrderPage = {
 				jQuery(".qty input").live(
 					"change",
 					function(){
-						var val = parseFloat(jQuery(this).val());
+						var val = parseInt(jQuery(this).val());
 						if(!val) {
 							jQuery(this).val(0);
+							jQuery(this).addClass("toBeCompleted");
+							jQuery(this).removeClass("completed");
 						}
 						else if(val < 0) {
 							jQuery(this).addClass("toBeCompleted");
 							jQuery(this).removeClass("completed");
+							jQuery(this).val(0);
 
 						}
 						else {
 							jQuery(this).removeClass("toBeCompleted");
 							jQuery(this).addClass("completed");
+							jQuery(this).val(val);
 						}
 						AddUpProductsToOrderPage.updateRows();
 					}
 				);
 
 				var options = {
-						target:        '#AddProductsToOrderRowsResult',   // target element(s) to be updated with server response
-						beforeSubmit:  showRequest,  // pre-submit callback
-						success:       showResponse  // post-submit callback
-
-						// other available options:
-						//url:       url         // override for form's 'action' attribute
-						//type:      type        // 'get' or 'post', override for form's 'method' attribute
-						//dataType:  null        // 'xml', 'script', or 'json' (expected server response type)
-						//clearForm: true        // clear all form fields after successful submit
-						//resetForm: true        // reset the form after successful submit
-
-						// jQuery.ajax options can be used here too, for example:
-						//timeout:   3000
+					target:        '#AddProductsToOrderRowsResult',   // target element(s) to be updated with server response
+					beforeSubmit:  showRequest,  // pre-submit callback
+					success:       showResponse  // post-submit callback
 				};
 
 				// bind form using 'ajaxForm'
@@ -104,48 +108,43 @@ var AddUpProductsToOrderPage = {
 
 		// pre-submit callback
 		function showRequest(formData, jqForm, options) {
-				jQuery("#AddProductsToOrderRowsResult").text("loading").addClass("loading");
-				for(var i = 0; i < this.rowNumbers; i++) {
-					jQuery("#Name_"+i+" input").change();
-					jQuery("#Buyable_"+i+" select").change();
-					jQuery("#Qty_"+i+" input").change();
+			AddUpProductsToOrderPage.goToCheckoutLink = false;
+			for(var i  = 0; i < formData.length; i++) {
+				if(formData[i].name == "submit") {
+					AddUpProductsToOrderPage.rowNumbers = 0;
+					jQuery("#AddProductsToOrderRowsTable tbody tr").remove()
+					AddUpProductsToOrderPage.goToCheckoutLink = true;
 				}
-				// formData is an array; here we use jQuery.param to convert it to a string to display it
-				// but the form plugin does this for you automatically when it submits the data
-				var queryString = jQuery.param(formData);
+			}
 
-				// jqForm is a jQuery object encapsulating the form element.  To access the
-				// DOM element for the form do this:
-				// var formElement = jqForm[0];
+			jQuery("#AddProductsToOrderRowsResult").text("validating ...").addClass("loading");
+			for(var i = 0; i < AddUpProductsToOrderPage.rowNumbers; i++) {
+				jQuery("#Name_"+i+" input").change();
+				jQuery("#Buyable_"+i+" select").change();
+				jQuery("#Qty_"+i+" input").change();
+			}
+			if(jQuery(".toBeCompleted").length > 0) {
+				jQuery("#AddProductsToOrderRowsResult").text("please review entries").removeClass("loading");
+				//return false;
+			}
+			jQuery("#AddProductsToOrderRowsResult").text("loading");
 
-				//alert('About to submit: \n\n' + queryString);
-
-				// here we could return false to prevent the form from being submitted;
-				// returning anything other than false will allow the form submit to continue
-				return true;
+			return true;
 		}
 
 		// post-submit callback
 		function showResponse(responseText, statusText, xhr, jQueryform)  {
-				// for normal html responses, the first argument to the success callback
-				// is the XMLHttpRequest object's responseText property
-
-				// if the ajaxForm method was passed an Options Object with the dataType
-				// property set to 'xml' then the first argument to the success callback
-				// is the XMLHttpRequest object's responseXML property
-
-				// if the ajaxForm method was passed an Options Object with the dataType
-				// property set to 'json' then the first argument to the success callback
-				// is the json data object returned by the server
-				//alert('status: ' + statusText + '\n\nresponseText: \n' + responseText +'\n\nThe output div should have already been updated with the responseText.');
-				jQuery("#AddProductsToOrderRowsResult").html(response).removeClass("loading");
+			if(AddUpProductsToOrderPage.goToCheckoutLink) {
+				window.location = AddUpProductsToOrderPage.CheckoutLink;
+			}
+			jQuery("#AddProductsToOrderRowsResult").removeClass("loading");
 		}
 	},
 
 	updateRows: function ()  {
 		for(var i = 0; i < this.rowNumbers; i++) {
 			var price = parseFloat(jQuery("#Buyable_"+i+" select option:selected").attr("rel"));
-			var qty = parseFloat(jQuery("#Qty_"+i+" input").val());
+			var qty = parseInt(jQuery("#Qty_"+i+" input").val());
 			var total = Math.round((qty * price * 100))/100;
 			if(total && total != NaN && total > 0) {
 				jQuery("#Total_"+i).text("$" +total)
@@ -154,7 +153,22 @@ var AddUpProductsToOrderPage = {
 				jQuery("#Total_"+i).text("tba");
 			}
 		}
+	},
+
+	setDefaultSelectValue: function() {
+		jQuery(".buyable select").each(
+			function(i, el) {
+				var selected = jQuery(el).children("option[value='0']").attr("selected");
+				if(selected) {
+					var rel = jQuery(el).attr("rel");
+					if(rel) {
+						jQuery(el).children("option[value='"+rel+"']").attr("selected", "selected");
+					}
+				}
+			}
+		);
 	}
+
 }
 
 
