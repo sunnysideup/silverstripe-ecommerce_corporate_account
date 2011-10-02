@@ -182,6 +182,14 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 		}
 		$nameGrandTotalNice = DBField::create("Currency", $nameGrandTotal, "nameGrandTotal")->Nice();
 
+		$customiseArray = array(
+			"Message" => "",
+			"BuyableSummary" => $buyableSummaryDos,
+			"NameSummary" => $nameSummaryDos,
+			"BuyableGrandTotalNice" => $buyableGrandTotalNice,
+			"NameGrandTotalNice" => $nameGrandTotalNice
+		);
+
 		//submit?
 		if(isset($_REQUEST["submit"])) {
 			if($buyableSummaryDos){
@@ -190,33 +198,28 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 					$sc->addBuyable($buyableDo->Buyable, $buyableDo->Qty);
 				}
 				$checkoutPage = DataObject::get_one("CheckoutPage");
-				$html = $this->customise(array("Message" => "", "BuyableSummary" => $buyableSummaryDos, "NameSummary" => $nameSummaryDos))->renderWith("AddProductsToOrderResultsAjax");
+				$html = $this->customise(array($customiseArray))->renderWith("AddProductsToOrderResultsAjax");
 				$modifier = DataObject::get_one("AddUpProductsToOrderPageModifier", "OrderID = ".ShoppingCart::current_order()->ID);
 				$modifier->AddUpProductsToOrderPageNotes = $html;
 				$modifier->write();
+				Session::set("AddProductsToOrderRows", null);
+				Session::save();
 				Session::clear("AddProductsToOrderRows");
 				Session::save();
-				$msg = "Entries updated.";
+				$customiseArray["Message"] =  = "Entries updated.";
 			}
 			else {
-				$msg = "No products added.";
+				$customiseArray["Message"] = "No products added.";
 			}
 		}
 		else {
 			if($buyableSummaryDos){
-				$msg = "Entries updated.";
+				$customiseArray["Message"] = "Entries updated.";
 			}
 			else {
-					$msg = "No products added.";
+				$customiseArray["Message"] = "No products added.";
 			}
 		}
-		$customiseArray = array(
-			"Message" => $msg,
-			"BuyableSummary" => $buyableSummaryDos,
-			"NameSummary" => $nameSummaryDos,
-			"BuyableGrandTotalNice" => $buyableGrandTotalNice,
-			"NameGrandTotalNice" => $nameGrandTotalNice
-		);
 		return $this->customise($customiseArray)->renderWith("AddProductsToOrderResultsAjax");
 	}
 
