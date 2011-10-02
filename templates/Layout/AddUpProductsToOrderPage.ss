@@ -16,7 +16,7 @@
 	</table>
 	<div class="addProductsToOrderAddRows"><a href="$Link(addrow)/">Add Row</a></div>
 	<div class="Actions">
-		<input type="submit" value="check order" name="check" />
+		<input type="submit" value="review order" name="check" />
 		<input type="submit" value="finalise order" name="submit" />
 		<input type="hidden" value="0" name="rowNumbers" />
 	</div>

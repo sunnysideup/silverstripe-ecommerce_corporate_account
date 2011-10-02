@@ -2,10 +2,18 @@
 	<p>$Message</p>
 <% if BuyableSummary %>
 	<div class="buyableSummary">
-		<h4>Summary of Products</h4>
+		<h4>Summary by Item ($BuyableGrandTotalNice)</h4>
 		<ul>
 			<% control BuyableSummary %>
-			<li><span class="title">$Title</span><span class="semiColon">: </span><span class="quantity">$Qty</span></li>
+			<li>
+				<span class="title">$MyTitle</span>
+				<span class="semiColon">: </span>
+				<span class="quantity">$Qty</span>
+				<span class="times"> x </span>
+				<span class="price">$PriceNice</span>
+				<span class="equal">= </span>
+				<span class="total">$TotalNice</span>
+			</li>
 		<% end_control %>
 		</ul>
 	</div>
@@ -13,23 +21,23 @@
 
 <% if NameSummary %>
 	<div class="nameSummary">
-		<h4>Summary by Name</h4>
+		<h4>Summary by Name ($NameGrandTotalNice)</h4>
 		<ul>
 		<% control NameSummary %>
 			<li>
 				<span class="name">$Name</span>
 				<span class="equal">= </span>
-				<span class="totalInner">$SumTotal</span>
+				<span class="totalInner">$TotalNice</span>
 				<ul>
 				<% control Buyables %>
 					<li>
-						<span class="title">$Buyable.Title</span>
+						<span class="title">$MyTitle</span>
 						<span class="semiColon">: </span>
 						<span class="quantity">$Qty</span>
 						<span class="times"> x </span>
-						<span class="price">$Price</span>
+						<span class="price">$PriceNice</span>
 						<span class="equal">= </span>
-						<span class="total">$ItemTotal</span>
+						<span class="total">$TotalNice</span>
 					</li>
 			<% end_control %>
 				</ul>

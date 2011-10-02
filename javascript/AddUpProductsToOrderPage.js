@@ -23,6 +23,7 @@ var AddUpProductsToOrderPage = {
 		jQuery(".addProductsToOrderAddRows a").live(
 			"click",
 			function() {
+				jQuery("#AddProductsToOrderRowsResult").addClass("loading");
 				AddUpProductsToOrderPage.rowNumbers++;
 				jQuery("input[name='rowNumbers']").val(AddUpProductsToOrderPage.rowNumbers);
 				url = jQuery(this).attr("href");
@@ -33,6 +34,7 @@ var AddUpProductsToOrderPage = {
 						jQuery('#AddProductsToOrderRowsTable tbody').append(data);
 						AddUpProductsToOrderPage.setDefaultSelectValue();
 						AddUpProductsToOrderPage.updateRows();
+						jQuery("#AddProductsToOrderRowsResult").removeClass("loading");
 					},
 					dataType: "html"
 				});

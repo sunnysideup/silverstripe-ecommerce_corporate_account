@@ -10,6 +10,8 @@
  */
 class AddUpProductsToOrderPage extends Page {
 
+	public static $icon = "ecommerce_corporate_account/images/treeicons/AddUpProductsToOrderPage";
+
 }
 
 
@@ -21,7 +23,6 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
 		Requirements::javascript(THIRDPARTY_DIR."/jquery-form/jquery.form.js");
 		Requirements::javascript("ecommerce_corporate_account/javascript/AddUpProductsToOrderPage.js");
-		Requirements::customScript("AddUpProductsToOrderPage.setRowNumbers(".$this->RowNumbers().");", "setRowNumbers");
 		$checkoutPage = DataObject::get_one("CheckoutPage");
 		Requirements::customScript("AddUpProductsToOrderPage.setCheckoutLink('".$checkoutPage->Link()."');", "setCheckoutLink");
 	}
@@ -40,6 +41,10 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 		if(Director::is_ajax()) {
 			$startNumber = $this->rowNumbers - 1;
 		}
+		elseif($savedValuesArray && count($savedValuesArray)) {
+			$this->rowNumbers = count($savedValuesArray);
+		}
+		Requirements::customScript("AddUpProductsToOrderPage.setRowNumbers(".$this->RowNumbers().");", "setRowNumbers");
 		for($i = $startNumber ; $i < $this->rowNumbers; $i++){
 			if(!isset($savedValuesArray[$i])) {$savedValuesArray[$i] = array();}
 			if(!isset($savedValuesArray[$i]["Name"])){$savedValuesArray[$i]["Name"]= "";}
@@ -72,14 +77,24 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 							$qty = round($_REQUEST["qty_$i"], $buyable->QuantityDecimals());
 							if($qty) {
 								$buyable->Qty = 0;
-								$array[$i] = array(
-									"Name" => Convert::raw2sql($_REQUEST["name_$i"]),
+								$name = strtoupper(Convert::raw2sql(Convert::raw2xml($_REQUEST["name_$i"])));
+								$buyableClassNameAndID = $className."_".$id;
+								$price = $buyable->getCalculatedPrice();
+								$total = $price * $qty;
+								$innerArray = array(
+									"Name" => $name,
 									"Qty" => $qty,
-									"BuyableClassNameAndID" => $className."_".$id,
+									"BuyableClassNameAndID" => $buyableClassNameAndID,
 									"ClassName" => $className,
 									"ID" => $id,
-									"Buyable" => $buyable
+									"Buyable" => $buyable,
+									"Price" => $price,
+									"Total" => $total,
+									"MyTitle" => $buyable->Title
 								);
+								$array[$i] = $innerArray;
+								$buyableArray[$buyableClassNameAndID][] = $innerArray;
+								$nameArray[$name][$buyableClassNameAndID][] = $innerArray;
 							}
 						}
 					}
@@ -88,67 +103,94 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 		}
 
 		Session::set("AddProductsToOrderRows", serialize($array));
+		$array = null;
+		$innerArray = null;
+		$buyable = null;
 
+		// per BUYABLE
 		$buyableSummaryDos = null;
-		$nameSummaryDos = null;
-		$nameArray = array();
-		if(is_array($array)) {
-			if(count($array)) {
-				$buyableSummaryDos = new DataObjectSet();
-				foreach($array as $arrayInner) {
-					if(isset($arrayInner["Buyable"]) && $arrayInner["Buyable"]) {
-						$name = $arrayInner["Name"];
-						$className = $arrayInner["ClassName"];
-						$id = $arrayInner["ID"];
-						$qty = $arrayInner["Qty"];
-						$buyable = $arrayInner["Buyable"];
-						//quantity
-						$buyable->Qty = $buyable->Qty + $qty;
-						$buyableSummaryDos->push($buyable, $className.$id);
-						// by name
-						if(!isset($nameArray[$name])) {
-							$nameArray[$name] = new DataObject();
-							$nameArray[$name]->SumTotalCalculation = 0;
-							$nameArray[$name]->Name = $name;
-							$quantitiesArray[$name] = array();
-							$nameArray[$name]->quantitiesArray = Array();
-							$nameArray[$name]->Buyables = new DataObjectSet();
-						}
-						$price = $buyable->getCalculatedPrice();
-						$itemTotalCalculation = $price * $qty;
-
-						$nameArray[$name]->SumTotalCalculation += $itemTotalCalculation;
-						$sumTotal = DBField::create("Currency", $nameArray[$name]->SumTotalCalculation, "sumTotal".$name.$className.$id)->Nice();
-						$nameArray[$name]->SumTotal = $sumTotal;
-						if(!isset($quantitiesArray[$name][$className.$id])) {
-							$quantitiesArray[$name][$className.$id] = 0;
-						}
-						$quantitiesArray[$name][$className.$id] += $qty;
-						$do = new DataObject();
-						$do->Buyable = $buyable;
-						$do->Qty += $quantitiesArray[$name][$className.$id];
-						$do->Price = DBField::create("Currency", $price, "itemPrice".$name.$className.$id)->Nice();
-						$do->ItemTotal =  DBField::create("Currency", $quantitiesArray[$name][$className.$id] * $price, "itemTotal".$name.$className.$id)->Nice();
-						$nameArray[$name]->Buyables->push($do, $buyable->ID);
-					}
+		$buyableGrandTotal = 0;
+		if(count($buyableArray)) {
+			$buyableSummaryDos = new DataObjectSet();
+			foreach($buyableArray as $buyableClassNameAndID =>  $buyables) {
+				$buyableQty = 0;
+				$buyableTotal = 0;
+				foreach($buyables as $buyableEntry) {
+					$buyableQty += $buyableEntry["Qty"];
+					$buyableTotal += $buyableEntry["Total"];
 				}
+				$myTitle = $buyableEntry["MyTitle"];
+				$price = $buyableEntry["Price"];
+				$buyableDo = new DataObject();
+				$buyableDo->MyTitle = $myTitle;
+				$buyableDo->Buyable = $buyableEntry["Buyable"];
+				$buyableDo->Qty = $buyableQty;
+				$buyableDo->Price = $price;
+				$buyableDo->PriceNice = DBField::create("Currency", $price, "PriceNice".$buyableClassNameAndID)->Nice();
+				$buyableDo->Total = $buyableTotal;
+				$buyableDo->TotalNice = DBField::create("Currency", $buyableTotal, "TotalNice".$buyableClassNameAndID)->Nice();
+				$buyableSummaryDos->push($buyableDo);
+				$buyableGrandTotal += $buyableTotal;
 			}
 		}
-		if(is_array($nameArray) && count($nameArray) ) {
+		$buyableGrandTotalNice = DBField::create("Currency", $buyableGrandTotal, "buyableGrandTotal")->Nice();
+
+		// per NAME
+		$nameSummaryDos = null;
+		$nameGrandTotal = 0;
+		if(count($nameArray)) {
 			$nameSummaryDos = new DataObjectSet();
-			foreach($nameArray as $nameDo) {
+			$buyablesDos = array();
+			foreach($nameArray as $name => $nameEntry) {
+				$nameDo = new DataObject();
+				$nameDo->Name = $name;
+				$nameTotal = 0;
+				$nameQty = 0;
+				if(count($nameEntry)) {
+					$buyableDo = array();
+					$nameDo->Buyables = new DataObjectSet();
+					foreach($nameEntry as $buyableClassNameAndID => $buyables) {
+						if(count($buyables)) {
+							$buyableQty = 0;
+							$buyableTotal = 0;
+							foreach($buyables as $buyableEntry) {
+								$buyableQty += $buyableEntry["Qty"];
+								$buyableTotal += $buyableEntry["Total"];
+								$nameQty += $buyableEntry["Qty"];
+								$nameTotal += $buyableEntry["Total"];
+							}
+							$myTitle = $buyableEntry["MyTitle"];
+							$price = $buyableEntry["Price"];
+							$buyableDo[$buyableClassNameAndID] = new DataObject();
+							$buyableDo[$buyableClassNameAndID]->MyTitle = $myTitle;
+							//$buyableDo->Buyable = $buyableEntry["Buyable"];
+							$buyableDo[$buyableClassNameAndID]->Qty = $buyableQty;
+							$buyableDo[$buyableClassNameAndID]->Price = $price;
+							$buyableDo[$buyableClassNameAndID]->PriceNice = DBField::create("Currency", $price, "PriceNice".$buyableClassNameAndID)->Nice();
+							$buyableDo[$buyableClassNameAndID]->Total = $buyableTotal;
+							$buyableDo[$buyableClassNameAndID]->TotalNice = DBField::create("Currency", $buyableTotal, "TotalNice".$buyableClassNameAndID)->Nice();
+							$nameDo->Buyables->push($buyableDo[$buyableClassNameAndID]);
+							$nameGrandTotal += $buyableTotal;
+						}
+					}
+				}
+				$nameDo->Qty = $nameQty;
+				$nameDo->Total = $nameTotal;
+				$nameDo->TotalNice = DBField::create("Currency", $nameTotal, "TotalNice".$name)->Nice();
 				$nameSummaryDos->push($nameDo);
 			}
 		}
+		$nameGrandTotalNice = DBField::create("Currency", $nameGrandTotal, "nameGrandTotal")->Nice();
+
+		//submit?
 		if(isset($_REQUEST["submit"])) {
 			if($buyableSummaryDos){
 				$sc = ShoppingCart::singleton();
-				foreach($buyableSummaryDos as $buyable) {
-					$sc->addBuyable($buyable, $buyable->Qty);
+				foreach($buyableSummaryDos as $buyableDo) {
+					$sc->addBuyable($buyableDo->Buyable, $buyableDo->Qty);
 				}
 				$checkoutPage = DataObject::get_one("CheckoutPage");
 				$html = $this->customise(array("Message" => "", "BuyableSummary" => $buyableSummaryDos, "NameSummary" => $nameSummaryDos))->renderWith("AddProductsToOrderResultsAjax");
-				die($html);
 				$modifier = DataObject::get_one("AddUpProductsToOrderPageModifier", "OrderID = ".ShoppingCart::current_order()->ID);
 				$modifier->AddUpProductsToOrderPageNotes = $html;
 				$modifier->write();
@@ -168,7 +210,14 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 					$msg = "No products added.";
 			}
 		}
-		return $this->customise(array("Message" => $msg, "BuyableSummary" => $buyableSummaryDos, "NameSummary" => $nameSummaryDos))->renderWith("AddProductsToOrderResultsAjax");
+		$customiseArray = array(
+			"Message" => $msg,
+			"BuyableSummary" => $buyableSummaryDos,
+			"NameSummary" => $nameSummaryDos,
+			"BuyableGrandTotalNice" => $buyableGrandTotalNice,
+			"NameGrandTotalNice" => $nameGrandTotalNice
+		);
+		return $this->customise($customiseArray)->renderWith("AddProductsToOrderResultsAjax");
 	}
 
 	function addrow($request){
