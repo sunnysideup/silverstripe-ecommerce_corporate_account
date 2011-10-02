@@ -198,7 +198,7 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 					$sc->addBuyable($buyableDo->Buyable, $buyableDo->Qty);
 				}
 				$checkoutPage = DataObject::get_one("CheckoutPage");
-				$html = $this->customise(($customiseArray)->renderWith("AddProductsToOrderResultsAjax");
+				$html = $this->customise($customiseArray)->renderWith("AddProductsToOrderResultsAjax");
 				$modifier = DataObject::get_one("AddUpProductsToOrderPageModifier", "OrderID = ".ShoppingCart::current_order()->ID);
 				$modifier->AddUpProductsToOrderPageNotes = $html;
 				$modifier->write();
