@@ -206,7 +206,7 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 				Session::save();
 				Session::clear("AddProductsToOrderRows");
 				Session::save();
-				$customiseArray["Message"] =  = "Entries updated.";
+				$customiseArray["Message"] = "Entries updated.";
 			}
 			else {
 				$customiseArray["Message"] = "No products added.";
