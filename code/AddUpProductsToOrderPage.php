@@ -23,11 +23,11 @@ class AddUpProductsToOrderPage extends Page {
 			array(
 				new Tab(
 					'PreviousEntries',
-					new LiteralField("PreviousEntries", "<p>To review previous entries, please go to the <a href=\"/admin/sales/\">sales section</a> of the CMS and search for Order Logs.</p>")))
+					new LiteralField("PreviousEntries", "<p>To review previous entries, please go to the <a href=\"/admin/sales/\">sales section</a> of the CMS and search for Order Logs.</p>")
 				),
 				new Tab(
 					'PreviousEntries',
-					new TextField("OrderLogEntryTitle", "Title to use on orders for break down per item and name (e.g. order breakdown)")))
+					new TextField("OrderLogEntryTitle", "Title to use on orders for break down per item and name (e.g. order breakdown)")
 				)
 			)
 		);
