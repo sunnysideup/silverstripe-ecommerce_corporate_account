@@ -1,5 +1,5 @@
 .loading {background-image: url(/ecommerce/images/loading.gif); background-repeat: no-repeat; background-position: 50% 50%; margin-left: -110px; margin-top: -10px; min-height: 20px;}
-.qty input, table tbody td .total {text-align: right;}
+.qty input, table tbody td.total {text-align: right;}
 
 .addProductsToOrderAddRows a, .reset a {display: block; text-indent: -2000px; height: 32px; width: 32px; }
 .addProductsToOrderAddRows a {background-image: url(/ecommerce_corporate_account/images/add.png)}
