@@ -20,7 +20,13 @@
 	<div class="addProductsToOrderAddRows"><a href="$Link(addrow)/" title="add a row">Add Row</a></div>
 	<div class="Actions">
 		<input type="submit" value="review order" name="check" />
+<% if RequestQuoteOnly %>
+	<% if CanRequestQuote %>
+		<input type="submit" value="request quote" name="quote" />
+	<% end_if %>
+<% else %>
 		<input type="submit" value="finalise order" name="submit" />
+<% end_if %>
 		<input type="hidden" value="0" name="rowNumbers" />
 	</div>
 </form>

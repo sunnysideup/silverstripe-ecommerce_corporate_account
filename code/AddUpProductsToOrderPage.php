@@ -13,7 +13,8 @@ class AddUpProductsToOrderPage extends Page {
 	public static $icon = "ecommerce_corporate_account/images/treeicons/AddUpProductsToOrderPage";
 
 	public static $db = array(
-		"OrderLogEntryTitle" => "Varchar"
+		"OrderLogEntryTitle" => "Varchar",
+		"RequestQuoteOnly" => "Boolean"
 	);
 
 	function getCMSFields() {
@@ -26,8 +27,9 @@ class AddUpProductsToOrderPage extends Page {
 					new LiteralField("PreviousEntries", "<p>To review previous entries, please go to the <a href=\"/admin/sales/\">sales section</a> of the CMS and search for Order Logs.</p>")
 				),
 				new Tab(
-					'PreviousEntries',
-					new TextField("OrderLogEntryTitle", "Title to use on orders for break down per item and name (e.g. order breakdown)")
+					'Process',
+					new TextField("OrderLogEntryTitle", "Title to use on orders for break down per item and name (e.g. order breakdown)"),
+					new CheckboxField("RequestQuoteOnly", "Request quote only")
 				)
 			)
 		);
@@ -213,7 +215,7 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 		);
 
 		//submit?
-		if(isset($_REQUEST["submit"])) {
+		if((isset($_REQUEST["submit"]) && $_REQUEST["submit"]) || (isset($_REQUEST["quote"]) && $_REQUEST["quote"])) {
 			if($buyableSummaryDos){
 				$sc = ShoppingCart::singleton();
 				foreach($buyableSummaryDos as $buyableDo) {
