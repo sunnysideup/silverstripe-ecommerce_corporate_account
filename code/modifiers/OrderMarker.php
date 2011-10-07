@@ -21,11 +21,11 @@ class OrderMarker extends OrderModifier {
 		return $fields;
 	}
 
-	public static $singular_name = "Order Marker";
-		function i18n_single_name() { return _t("OrderMarker.ORDERMARKER", "Modifier Marker");}
+	public static $singular_name = "Purchase Order";
+		function i18n_single_name() { return _t("OrderMarker.ORDERMARKER", "Modifier Purchase Order");}
 
-	public static $plural_name = "Order Markers";
-		function i18n_plural_name() { return _t("OrderMarker.ORDERMARKERS", "Modifier Markers");}
+	public static $plural_name = "Purchase Orders";
+		function i18n_plural_name() { return _t("OrderMarker.ORDERMARKERS", "Modifier Purchase Orders");}
 
 // ######################################## *** other (non) static variables (e.g. protected static $special_name_for_something, protected $order)
 
@@ -53,7 +53,7 @@ class OrderMarker extends OrderModifier {
 
 	function getModifierForm($controller) {
 		$fields = new FieldSet();
-		$fields->push(new TextField('OrderFor', "enter name or code for this order", $this->OrderFor));
+		$fields->push(new TextField('OrderFor', "name or purchase order code", $this->OrderFor));
 		$fields->push(new LiteralField('OrderForConfirmation', "<div><div id=\"OrderForConfirmation\" class=\"middleColumn\"></span></div>"));
 		$validator = new RequiredFields(array("OrderFor"));
 		$actions = new FieldSet(
