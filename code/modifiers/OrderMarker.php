@@ -94,7 +94,29 @@ class OrderMarker extends OrderModifier {
 		parent::onBeforeWrite();
 	}
 
+
+	function onBeforeRemove(){
+		$this->OrderFor = "";
+		parent::onBeforeRemove();
+	}
+
 // ######################################## *** AJAX related functions
+
+	/**
+	* some modifiers can be hidden after an ajax update (e.g. if someone enters a discount coupon and it does not exist).
+	* There might be instances where ShowInTable (the starting point) is TRUE and HideInAjaxUpdate return false.
+	*@return Boolean
+	**/
+	public function HideInAjaxUpdate() {
+		if(parent::HideInAjaxUpdate()) {
+			return true;
+		}
+		if($this->OrderFor) {
+			return false;
+		}
+		return true;
+	}
+
 // ######################################## *** debug functions
 
 }
