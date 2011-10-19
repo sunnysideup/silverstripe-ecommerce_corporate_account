@@ -29,8 +29,6 @@ class OrderMarker extends OrderModifier {
 
 // ######################################## *** other (non) static variables (e.g. protected static $special_name_for_something, protected $order)
 
-	protected static $form_header = 'Order For ...';
-		static function set_form_header(string $s) {self::$form_header = $s;}
 
 // ######################################## *** CRUD functions (e.g. canEdit)
 // ######################################## *** init and update functions
