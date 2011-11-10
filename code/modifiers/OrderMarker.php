@@ -32,10 +32,16 @@ class OrderMarker extends OrderModifier {
 
 // ######################################## *** CRUD functions (e.g. canEdit)
 // ######################################## *** init and update functions
-
-	public function runUpdate() {
-		$this->checkField("OrderFor");
-		parent::runUpdate();
+	/**
+	 * updates database fields
+	 * @param Bool $force - run it, even if it has run already
+	 * @return void
+	 */
+	public function runUpdate($force = true) {
+		if(!$this->IsRemoved()) {
+			$this->checkField("OrderFor");
+			parent::runUpdate($force);
+		}
 	}
 
 	function updateOrderFor($s) {
