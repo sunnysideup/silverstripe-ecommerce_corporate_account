@@ -6,3 +6,9 @@
 .reset a {background-image: url(/ecommerce_corporate_account/images/undo.png); float: right;}
 .reset{float: right;}
 #AddProductsToOrderRowsTable .toBeCompleted {border: 1px solid red;}
+
+span.name, span.title  {font-weight: bold;}
+
+#AddProductsToOrderRowsTable .name input {width: 10em;}
+#AddProductsToOrderRowsTable .buyable select {width: 20em;}
+#AddProductsToOrderRowsTable .qty input {width: 3em; float: right;}

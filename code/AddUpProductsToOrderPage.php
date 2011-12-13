@@ -88,6 +88,7 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 	}
 
 	function submit($request){
+		$buyableArray = null;
 		$this->rowNumbers = intval($_REQUEST["rowNumbers"]);
 		$array = array();
 		for($i = 0 ; $i <= $this->rowNumbers; $i++){
@@ -134,7 +135,7 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 		// per BUYABLE
 		$buyableSummaryDos = null;
 		$buyableGrandTotal = 0;
-		if(count($buyableArray)) {
+		if(is_array($buyableArray) && count($buyableArray)) {
 			$buyableSummaryDos = new DataObjectSet();
 			foreach($buyableArray as $buyableClassNameAndID =>  $buyables) {
 				$buyableQty = 0;

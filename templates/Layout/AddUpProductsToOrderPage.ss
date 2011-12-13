@@ -27,7 +27,7 @@
 <% else %>
 		<input type="submit" value="finalise order" name="submit" />
 <% end_if %>
-		<input type="hidden" value="0" name="rowNumbers" />
+		<input type="hidden" value="$RowNumbers" name="rowNumbers" />
 	</div>
 </form>
 <div id="AddProductsToOrderRowsResult"></div>
