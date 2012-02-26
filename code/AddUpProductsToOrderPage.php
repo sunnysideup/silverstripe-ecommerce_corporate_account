@@ -91,6 +91,7 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 		$buyableArray = null;
 		$this->rowNumbers = intval($_REQUEST["rowNumbers"]);
 		$array = array();
+		$nameArray = array();
 		for($i = 0 ; $i <= $this->rowNumbers; $i++){
 			if(isset($_REQUEST["buyable_$i"])) {
 				$explodeArray = explode("_", $_REQUEST["buyable_$i"]);

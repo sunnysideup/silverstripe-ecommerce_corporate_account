@@ -2,9 +2,9 @@
 .qty input, table tbody td.total {text-align: right;}
 
 .addProductsToOrderAddRows a, .reset a {display: block; text-indent: -2000px; height: 32px; width: 32px; }
-.addProductsToOrderAddRows a {background-image: url(/ecommerce_corporate_account/images/add.png)}
-.reset a {background-image: url(/ecommerce_corporate_account/images/undo.png); float: right;}
-.reset{float: right;}
+.addProductsToOrderAddRows a {background-image: url(/ecommerce_corporate_account/images/add.png); }
+.reset a {background-image: url(/ecommerce_corporate_account/images/undo.png);}
+.reset{display: block;}
 #AddProductsToOrderRowsTable .toBeCompleted {border: 1px solid red;}
 
 span.name, span.title  {font-weight: bold;}
