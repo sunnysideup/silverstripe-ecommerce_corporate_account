@@ -14,18 +14,18 @@ class OrderMarker extends OrderModifier {
 		"OrderFor" => "Varchar",
 	);
 
+	public static $singular_name = "Purchase Order";
+		function i18n_single_name() { return _t("OrderMarker.ORDERMARKER", "Modifier Purchase Order");}
+
+	public static $plural_name = "Purchase Orders";
+		function i18n_plural_name() { return _t("OrderMarker.ORDERMARKERS", "Modifier Purchase Orders");}
+
 // ######################################## *** cms variables + functions (e.g. getCMSFields, $searchableFields)
 
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
 		return $fields;
 	}
-
-	public static $singular_name = "Purchase Order";
-		function i18n_single_name() { return _t("OrderMarker.ORDERMARKER", "Modifier Purchase Order");}
-
-	public static $plural_name = "Purchase Orders";
-		function i18n_plural_name() { return _t("OrderMarker.ORDERMARKERS", "Modifier Purchase Orders");}
 
 // ######################################## *** other (non) static variables (e.g. protected static $special_name_for_something, protected $order)
 
@@ -55,15 +55,17 @@ class OrderMarker extends OrderModifier {
 		return $this->Order()->Items();
 	}
 
-	function getModifierForm($controller) {
+	function getModifierForm($optionalController = null, $optionalValidator = null) {
 		$fields = new FieldSet();
+		$fields->push($this->headingField());
+		$fields->push($this->descriptionField());
 		$fields->push(new TextField('OrderFor', "name or purchase order code", $this->OrderFor));
 		$fields->push(new LiteralField('OrderForConfirmation', "<div><div id=\"OrderForConfirmation\" class=\"middleColumn\"></span></div>"));
-		$validator = new RequiredFields(array("OrderFor"));
+		$optionalValidator = new RequiredFields(array("OrderFor"));
 		$actions = new FieldSet(
 			new FormAction('submit', 'Update Order')
 		);
-		return new OrderMarker_Form($controller, 'OrderMarker', $fields, $actions, $validator);
+		return new OrderMarker_Form($optionalController, 'OrderMarker', $fields, $actions, $optionalValidator);
 	}
 
 // ######################################## *** template functions (e.g. ShowInTable, TableTitle, etc...) ... USES DB VALUES
