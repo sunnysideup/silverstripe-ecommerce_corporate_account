@@ -58,7 +58,12 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 	 *
 	 **/
 	function AddProductsToOrderRows(){
-		$buyables = DataObject::get("Product");
+		$buyables = DataObject::get("Product", "\"AllowPurchase\" = 1");
+		foreach($buyables as $buyable) {
+			if(!$buyable->canPurchase()) {
+				$buyables->remove($buyable);
+			}
+		}
 		$dos = new DataObjectSet();
 		$savedValuesArray = unserialize(Session::get("AddProductsToOrderRows"));
 		$startNumber = 0;
