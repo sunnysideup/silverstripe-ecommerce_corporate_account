@@ -45,6 +45,8 @@ class AddUpProductsToOrderPage_Controller extends Page_Controller {
 		parent::init();
 		Requirements::themedCSS("AddUpProductsToOrderPage");
 		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
+		//Requirements::block(THIRDPARTY_DIR."/jquery/jquery.js");
+		//Requirements::javascript(Director::protocol()."ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js");
 		Requirements::javascript(THIRDPARTY_DIR."/jquery-form/jquery.form.js");
 		Requirements::javascript("ecommerce_corporate_account/javascript/AddUpProductsToOrderPage.js");
 		$checkoutPage = DataObject::get_one("CheckoutPage");

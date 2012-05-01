@@ -8,6 +8,8 @@ jQuery(document).ready(
 
 var AddUpProductsToOrderPage = {
 
+	delegateRootSelector: "#AddProductsToOrderOuter",
+
 	/**
 	 * number of rows
 	 * @var Integer
@@ -126,7 +128,8 @@ var AddUpProductsToOrderPage = {
 		);
 
 		//add a row
-		jQuery(".addProductsToOrderAddRows a").live(
+		jQuery(AddUpProductsToOrderPage.delegateRootSelector).delegate(
+			".addProductsToOrderAddRows a",
 			"click",
 			function() {
 				jQuery("#AddProductsToOrderRowsResult").addClass("loading");
@@ -155,7 +158,8 @@ var AddUpProductsToOrderPage = {
 	 */
 	prepareDataEntryValidation: function(){
 			//NAME
-		jQuery(".name input").live(
+		jQuery(AddUpProductsToOrderPage.delegateRootSelector).delegate(
+			".name input",
 			"change",
 			function(){
 				var val = jQuery(this).val();
@@ -170,7 +174,8 @@ var AddUpProductsToOrderPage = {
 			}
 		);
 			//BUYABLE
-		jQuery(".buyable select").live(
+		jQuery(AddUpProductsToOrderPage.delegateRootSelector).delegate(
+			".buyable select",
 			"change",
 			function(){
 				var val = jQuery(this).val();
@@ -186,7 +191,8 @@ var AddUpProductsToOrderPage = {
 			}
 		);
 			//QUANTITY
-		jQuery(".qty input").live(
+		jQuery(AddUpProductsToOrderPage.delegateRootSelector).delegate(
+			".qty input",
 			"change",
 			function(){
 				var val = parseFloat(jQuery(this).val());
