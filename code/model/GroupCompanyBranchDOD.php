@@ -19,7 +19,7 @@ class GroupCompanyBranchDOD extends DataObjectDecorator {
 				$db["$type$name"] = $field;
 			}
 		}
-		return $db;
+		return array('db' => $db);
 	}
 	
 	function updateCMSFields(FieldSet &$fields) {
