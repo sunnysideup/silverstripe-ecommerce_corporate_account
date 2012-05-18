@@ -29,7 +29,6 @@ class GroupCompanyBranchDOD extends DataObjectDecorator {
 	}
 	
 	function requireDefaultRecords() {
-		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		$group = self::get_company_group();
 		if(! $group) {
 			$group = new Group(array(
@@ -47,6 +46,7 @@ class GroupCompanyBranchDOD extends DataObjectDecorator {
 	}
 	
 	static function get_company_group() {
+		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		$code = self::get_company_group_code();
 		return DataObject::get_one('Group', "{$bt}ParentID{$bt} = 0 AND {$bt}Code{$bt} = '$code'");
 	}
