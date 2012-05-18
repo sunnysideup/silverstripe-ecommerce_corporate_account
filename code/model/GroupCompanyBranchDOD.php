@@ -23,8 +23,28 @@ class GroupCompanyBranchDOD extends DataObjectDecorator {
 	}
 	
 	function updateCMSFields(FieldSet &$fields) {
-		if($this->owner->ID) {
-			
+		if($this->owner->isCompanyBranchGroup()) {
+			foreach(self::$address_types as $type) {
+				$cmsFields[] = new HeaderField($type);
+				foreach(self::$address_fields as $name => $field) {
+					$fieldClass = 'TextField';
+					if($field == 'Text') $fieldClass = 'TextareaField';
+					elseif($field == 'Varchar(2)') $fieldClass = 'CountryDropdownField';
+					$cmsFields[] = new $fieldClass("$type$name", $name);
+				}
+			}
+			$fields->addFieldsToTab('Root.Addresses', $cmsFields);
+		}
+	}
+	
+	function isCompanyBranchGroup() {
+		$companyGroup = self::get_company_group();
+		if($this->owner->ID && $this->owner->ParentID && $this->owner->ID != $companyGroup->ID) {
+			if($this->owner->ParentID != $companyGroup->ID) {
+				$parent = $this->owner->Parent();
+				return $parent->isCompanyBranchGroup();
+			}
+			return true;
 		}
 	}
 	
