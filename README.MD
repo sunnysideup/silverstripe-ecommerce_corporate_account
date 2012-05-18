@@ -7,7 +7,7 @@ Adds functionality to e-commerce that is typical
 for a corporate account (business to business sales):
 
 - purchase order number
-- assigning order items to people / departments
+- security groups as companies
 
 In the future we can add more corporate account
 functionality to this module.
