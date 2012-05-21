@@ -8,7 +8,8 @@ class GroupCompanyBranchDOD extends DataObjectDecorator {
 		'Address' => 'Text',
 		'Suburb' => 'Varchar',
 		'Town' => 'Varchar',
-		'Country' => 'Varchar(2)'
+		'Country' => 'Varchar(2)',
+		'Phone' => 'Varchar'
 	);
 	
 	static $company_group_title = 'Companies';
