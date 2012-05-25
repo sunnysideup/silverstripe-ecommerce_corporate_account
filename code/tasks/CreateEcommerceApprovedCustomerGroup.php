@@ -29,33 +29,27 @@ class CreateEcommerceApprovedCustomerGroup extends BuildTask{
 
 
 	function run($request){
-		$parentGroup = EcommerceRole::get_customer_group();
-		if($parentGroup) {
-			$approveCustomerGroup = self::get_approved_customer_group();
-			$approveCustomerPermissionCode = self::get_permission_code();
-			if(!$approveCustomerGroup) {
-				$approveCustomerGroup = new Group();
-				$approveCustomerGroup->Code = self::get_code();
-				$approveCustomerGroup->Title = self::get_name();
-				//$approveCustomerGroup->ParentID = $parentGroup->ID;
-				$approveCustomerGroup->write();
-				Permission::grant( $approveCustomerGroup->ID, $approveCustomerPermissionCode);
-				DB::alteration_message(self::get_name().' Group created',"created");
-			}
-			elseif(DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '".$approveCustomerGroup->ID."' AND \"Code\" LIKE '".$approveCustomerPermissionCode."'")->numRecords() == 0 ) {
-				Permission::grant($approveCustomerGroup->ID, $approveCustomerPermissionCode);
-				DB::alteration_message(self::get_name().' permissions granted',"created");
-			}
-			$approveCustomerGroup = self::get_approved_customer_group();
-			if(!$approveCustomerGroup) {
-				user_error("could not create user group");
-			}
-			else {
-				DB::alteration_message(self::get_name().' is ready for use',"created");
-			}
+		$approveCustomerGroup = self::get_approved_customer_group();
+		$approveCustomerPermissionCode = self::get_permission_code();
+		if(!$approveCustomerGroup) {
+			$approveCustomerGroup = new Group();
+			$approveCustomerGroup->Code = self::get_code();
+			$approveCustomerGroup->Title = self::get_name();
+			//$approveCustomerGroup->ParentID = $parentGroup->ID;
+			$approveCustomerGroup->write();
+			Permission::grant( $approveCustomerGroup->ID, $approveCustomerPermissionCode);
+			DB::alteration_message(self::get_name().' Group created',"created");
+		}
+		elseif(DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '".$approveCustomerGroup->ID."' AND \"Code\" LIKE '".$approveCustomerPermissionCode."'")->numRecords() == 0 ) {
+			Permission::grant($approveCustomerGroup->ID, $approveCustomerPermissionCode);
+			DB::alteration_message(self::get_name().' permissions granted',"created");
+		}
+		$approveCustomerGroup = self::get_approved_customer_group();
+		if(!$approveCustomerGroup) {
+			user_error("could not create user group");
 		}
 		else {
-			DB::alteration_message('Customer group does not exist',"deleted");
+			DB::alteration_message(self::get_name().' is ready for use',"created");
 		}
 	}
 

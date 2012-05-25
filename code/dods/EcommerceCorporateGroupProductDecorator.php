@@ -43,7 +43,10 @@ class EcommerceCorporateGroupProductDecorator extends DataObjectDecorator {
 	}
 
 	public function canPurchase(){
-
+		if($this->isApprovedCorporateCustomer()) {
+			return null;
+		}
+		return false;
 	}
 
 
