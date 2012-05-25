@@ -13,16 +13,13 @@ class EcommerceCorporateGroupProductDecorator extends DataObjectDecorator {
 				elseif($member->IsShopAdmin()) {
 					return true;
 				}
-				elseif($member->IsAdmin()) {
-					return true;
-				}
 			}
+			return false;
 		}
 		else {
 			//the only exception - Group not setup yet.
 			return true;
 		}
-		return false;
 	}
 
 	function updateCalculatedPrice($price){
@@ -39,7 +36,8 @@ class EcommerceCorporateGroupProductDecorator extends DataObjectDecorator {
 		}
 		//todo: add current controller
 		//to link back to to page before login
-		return "<a href=\"Security/login/\">log in</a>";
+		$moneyObject->setValue(0);
+		return $moneyObject;
 	}
 
 	public function canPurchase(){
