@@ -6,50 +6,40 @@ class CreateEcommerceApprovedCustomerGroup extends BuildTask{
 
 	protected $description = "Create the member group for approved customers";
 
-	protected static $code = "approvedshopcustomers";
-		static function set_code($s) {self::$code = $s;}
-		static function get_code() {return self::$code;}
-
-	protected static $name = "approved shop customers";
-		static function set_name($s) {self::$name = $s;}
-		static function get_name() {return self::$name;}
-
-	protected static $permission_code = "APPROVEDSHOPCUSTOMER";
-		static function set_permission_code($s) {self::$permission_code = $s;}
-		static function get_permission_code() {return self::$permission_code;}
-
 	/**
 	 *@return DataObject (Group)
 	 **/
 	public static function get_approved_customer_group() {
-		$customerCode = self::get_code();
-		$customerName = self::get_name();
+		$customerCode = EcommerceCorporateGroupGroupDecorator::get_code();
+		$customerName = EcommerceCorporateGroupGroupDecorator::get_name();
 		return DataObject::get_one("Group","\"Code\" = '".$customerCode."' OR \"Title\" = '".$customerName."'");
 	}
 
-
+	/**
+	 * run the task
+	 */
 	function run($request){
-		$approveCustomerGroup = self::get_approved_customer_group();
-		$approveCustomerPermissionCode = self::get_permission_code();
+		$approveCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
+		$approveCustomerPermissionCode = EcommerceCorporateGroupGroupDecorator::get_permission_code();
 		if(!$approveCustomerGroup) {
 			$approveCustomerGroup = new Group();
-			$approveCustomerGroup->Code = self::get_code();
-			$approveCustomerGroup->Title = self::get_name();
+			$approveCustomerGroup->Code = EcommerceCorporateGroupGroupDecorator::get_code();
+			$approveCustomerGroup->Title = EcommerceCorporateGroupGroupDecorator::get_name();
 			//$approveCustomerGroup->ParentID = $parentGroup->ID;
 			$approveCustomerGroup->write();
 			Permission::grant( $approveCustomerGroup->ID, $approveCustomerPermissionCode);
-			DB::alteration_message(self::get_name().' Group created',"created");
+			DB::alteration_message(EcommerceCorporateGroupGroupDecorator::get_name().' Group created',"created");
 		}
 		elseif(DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '".$approveCustomerGroup->ID."' AND \"Code\" LIKE '".$approveCustomerPermissionCode."'")->numRecords() == 0 ) {
 			Permission::grant($approveCustomerGroup->ID, $approveCustomerPermissionCode);
-			DB::alteration_message(self::get_name().' permissions granted',"created");
+			DB::alteration_message(EcommerceCorporateGroupGroupDecorator::get_name().' permissions granted',"created");
 		}
-		$approveCustomerGroup = self::get_approved_customer_group();
+		$approveCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
 		if(!$approveCustomerGroup) {
 			user_error("could not create user group");
 		}
 		else {
-			DB::alteration_message(self::get_name().' is ready for use',"created");
+			DB::alteration_message(EcommerceCorporateGroupGroupDecorator::get_name().' is ready for use',"created");
 		}
 	}
 
