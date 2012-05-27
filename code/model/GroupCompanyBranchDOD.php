@@ -1,19 +1,30 @@
 <?php
 
 class GroupCompanyBranchDOD extends DataObjectDecorator {
-	
+
 	static $address_types = array('Physical', 'Postal');
-	
+
 	static $address_fields = array(
 		'Address' => 'Text',
 		'Suburb' => 'Varchar',
 		'Town' => 'Varchar',
-		'Country' => 'Varchar(2)',
+		'Country' => 'Varchar(3)',
 		'Phone' => 'Varchar'
 	);
-	
-	static $company_group_title = 'Companies';
-	
+
+	protected static $company_group_title = 'Companies';
+		public static function set_company_group_title($s){self::$company_group_title = $s;}
+		public static function get_company_group_title(){return self::$company_group_title;}
+
+	static $company_group_code = 'companies';
+		public static function set_company_group_code($s){self::$company_group_code = $s;}
+		public static function get_company_group_code(){return self::$company_group_code;}
+
+	public static function get_company_group() {
+		$code = self::get_company_group_code();
+		return DataObject::get_one('Group', "\"Code\" = '$code'");
+	}
+
 	function extraStatics() {
 		foreach(self::$address_types as $type) {
 			foreach(self::$address_fields as $name => $field) {
@@ -22,33 +33,45 @@ class GroupCompanyBranchDOD extends DataObjectDecorator {
 		}
 		return array('db' => $db);
 	}
-	
+
 	function updateCMSFields(FieldSet &$fields) {
-		if($this->owner->isCompanyBranchGroup()) {
+		if($this->owner->isCorporateAccount()) {
 			foreach(self::$address_types as $type) {
 				$cmsFields[] = new HeaderField($type);
 				foreach(self::$address_fields as $name => $field) {
 					$fieldClass = 'TextField';
-					if($field == 'Text') $fieldClass = 'TextareaField';
-					elseif($field == 'Varchar(2)') $fieldClass = 'CountryDropdownField';
+					if($field == 'Text') {
+						$fieldClass = 'TextareaField';
+					}
+					elseif($name == 'Country') {
+						$fieldClass = 'CountryDropdownField';
+					}
 					$cmsFields[] = new $fieldClass("$type$name", $name);
 				}
 			}
 			$fields->addFieldsToTab('Root.Addresses', $cmsFields);
 		}
 	}
-	
-	function isCompanyBranchGroup() {
+
+	/**
+	 * Is the current group part of the corporate account
+	 * @return Boolean
+	 */
+	function isCorporateAccount() {
 		$companyGroup = self::get_company_group();
-		if($this->owner->ID && $this->owner->ParentID && $this->owner->ID != $companyGroup->ID) {
-			if($this->owner->ParentID != $companyGroup->ID) {
-				$parent = $this->owner->Parent();
-				return $parent->isCompanyBranchGroup();
+		if($companyGroup) {
+			if($this->owner->ID && $this->owner->ParentID && $this->owner->ID != $companyGroup->ID) {
+				if($this->owner->ParentID == $companyGroup->ID) {
+					return true;
+				}
+				else {
+					$parent = $this->owner->Parent();
+					return $parent->isCorporateAccount();
+				}
 			}
-			return true;
 		}
 	}
-	
+
 	function requireDefaultRecords() {
 		$group = self::get_company_group();
 		if(! $group) {
@@ -61,14 +84,6 @@ class GroupCompanyBranchDOD extends DataObjectDecorator {
 			DB::alteration_message('New companies group created', 'created');
 		}
 	}
-	
-	static function get_company_group_code() {
-		return strtolower(self::$company_group_title);
-	}
-	
-	static function get_company_group() {
-		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
-		$code = self::get_company_group_code();
-		return DataObject::get_one('Group', "{$bt}ParentID{$bt} = 0 AND {$bt}Code{$bt} = '$code'");
-	}
+
+
 }
