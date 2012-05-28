@@ -56,6 +56,27 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 		return array('db' => $db);
 	}
 
+	function CombinedCorporateGroupName(){
+		$array = array();
+		if($this->isCorporateAccount()) {
+			$array[] = $this->owner->Title;
+		}
+		if($this->owner->ParentID) {
+			$parent = DataObject::get_by_id("Group", $this->owner->ParentID);
+			if($parent && $parent->isCorporateAccount()) {
+				$array[] = $parent->Title;
+				if($parent->ParentID) {
+					$grandParent = DataObject::get_by_id("Group", $parent->ParentID);
+					if($grandParent && $grandParent->isCorporateAccount()) {
+						$array[] = $grandParent->Title;
+					}
+				}
+			}
+		}
+		$reverseArray = array_reverse($array);
+		return implode(" ", $reverseArray);
+	}
+
 	function updateCMSFields(FieldSet &$fields) {
 		if($this->owner->isCorporateAccount()) {
 			foreach(self::$address_types as $type) {

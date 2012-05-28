@@ -5,7 +5,7 @@
 		<th scope="col" width="100%"><% _t("OrderAddress.FOR","For") %></th>
 	</tr>
 	<tr>
-		<td width="100%">$Title</td>
+		<td width="100%">$CombinedCorporateGroupName</td>
 	</tr>
 </table>
 		<% end_control %><% end_if %>
