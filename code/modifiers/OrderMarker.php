@@ -10,6 +10,15 @@ class OrderMarker extends OrderModifier {
 
 // ######################################## *** model defining static variables (e.g. $db, $has_one)
 
+	/**
+	 *
+	 * @var Boolean
+	 */
+	protected static $order_for_is_required = false;
+		static function set_order_for_is_required($b) {self::$order_for_is_required = $b;}
+		static function get_order_for_is_required() {return self::$order_for_is_required;}
+
+
 	public static $db = array(
 		"OrderFor" => "Varchar",
 	);
@@ -44,8 +53,21 @@ class OrderMarker extends OrderModifier {
 		}
 	}
 
+	/**
+	 * updates the Order Modifier (but does NOT write it)
+	 * updates the OrderStatusLog (and writes it)
+	 * @param String $s - new value
+	 */
 	function updateOrderFor($s) {
 		$this->OrderFor = $s;
+		$log = DataObject::get_one("OrderMarker_StatusLog", "\"OrderID\" = ".$this->OrderID."");
+		if(!$log) {
+			$log = new OrderMarker_StatusLog();
+		}
+		$log->OrderID = $this->OrderID;
+		$log->Title = $this->Heading();
+		$log->Note = $s;
+		$log->Write();
 	}
 
 // ######################################## *** form functions (e. g. showform and getform)
@@ -58,12 +80,16 @@ class OrderMarker extends OrderModifier {
 	function getModifierForm($optionalController = null, $optionalValidator = null) {
 		$fields = new FieldSet();
 		$fields->push($this->headingField());
-		$fields->push($this->descriptionField());
-		$fields->push(new TextField('OrderFor', "name or purchase order code", $this->OrderFor));
+		$fields->push(new TextField('OrderFor', $this->Description(), $this->OrderFor));
 		$fields->push(new LiteralField('OrderForConfirmation', "<div><div id=\"OrderForConfirmation\" class=\"middleColumn\"></span></div>"));
-		$optionalValidator = new RequiredFields(array("OrderFor"));
+		if(self::get_order_for_is_required()) {
+			$optionalValidator = new RequiredFields(array("OrderFor"));
+		}
+		else {
+			$optionalValidator = null;
+		}
 		$actions = new FieldSet(
-			new FormAction('submit', 'Update Order')
+			new FormAction('submit', _t("OrderModifier.UPDATEORDER", "Update Order"))
 		);
 		return new OrderMarker_Form($optionalController, 'OrderMarker', $fields, $actions, $optionalValidator);
 	}
@@ -71,7 +97,7 @@ class OrderMarker extends OrderModifier {
 // ######################################## *** template functions (e.g. ShowInTable, TableTitle, etc...) ... USES DB VALUES
 
 	public function ShowInTable() {
-		return true;
+		return false;
 	}
 	public function CanBeRemoved() {
 		return false;
@@ -135,18 +161,33 @@ class OrderMarker_Form extends OrderModifierForm {
 	}
 
 	public function submit($data, $form) {
-		$order = ShoppingCart::current_order();
-		$modifiers = $order->Modifiers();
-		foreach($modifiers as $modifier) {
-			if (get_class($modifier) == 'OrderMarker') {
-				if(isset($data['OrderFor'])) {
-					$modifier->updateOrderFor(Convert::raw2sql($data["OrderFor"]));
-					$modifier->write();
+		if(isset($data['OrderFor'])) {
+			$order = ShoppingCart::current_order();
+			if($order) {
+				if($modifiers = $order->Modifiers("OrderMarker")) {
+					foreach($modifiers as $modifier) {
+						$modifier->updateOrderFor(Convert::raw2sql($data["OrderFor"]));
+						$modifier->write();
+					}
 					return ShoppingCart::singleton()->setMessageAndReturn(_t("OrderMarker.UPDATED", "Order saved as '".Convert::raw2xml($data["OrderFor"]))."'.", "good");
 				}
 			}
 		}
 		return ShoppingCart::singleton()->setMessageAndReturn(_t("OrderMarker.UPDATED", "Order marker could not be saved"), "bad");
 	}
+}
+
+class OrderMarker_StatusLog extends OrderStatusLog{
+
+
+	/**
+	 * standard SS method
+	 */
+	function populateDefaults() {
+		parent::populateDefaults();
+		$this->AuthorID = Member::currentUserID();
+		$this->InternalUseOnly = false;
+	}
+
 }
 

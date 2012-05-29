@@ -108,8 +108,9 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 					return true;
 				}
 				else {
-					$parent = $this->owner->Parent();
-					return $parent->isCorporateAccount();
+					if($parent = DataObject::get_by_id("Group", $this->ParentID)) { 
+						return $parent->isCorporateAccount();
+					}
 				}
 			}
 		}

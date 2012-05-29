@@ -7,7 +7,6 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 
 
 	function augmentEcommerceFields(&$fields) {
-
 		if($group = $this->getCorporateAccountGroup()) {
 			$this->owner->OrganisationID = $group->ID;
 			$fields->push(new ReadonlyField("OrganisationName", _t("OrderAddress.FOR", "For"),$group->CombinedCorporateGroupName()));
@@ -60,6 +59,7 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 	 * @return NULL | Group (object)
 	 * @author: Nicolaas
 	 */
+	function CorporateAccountGroup(){return $this->getCorporateAccountGroup();}
 	function getCorporateAccountGroup() {
 		if($this->owner->exists()) {
 			if($this->owner->isApprovedCorporateCustomer()) {
