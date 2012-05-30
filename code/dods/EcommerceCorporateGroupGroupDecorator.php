@@ -161,7 +161,7 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 
 	public function requireDefaultRecords() {
 		if(self::get_approved_customer_group()) {
-			$task = CreateEcommerceApprovedCustomerGroup();
+			$task = new CreateEcommerceApprovedCustomerGroup();
 			$task->run();
 		}
 	}
