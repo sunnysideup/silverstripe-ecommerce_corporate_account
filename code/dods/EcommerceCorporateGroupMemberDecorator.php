@@ -22,7 +22,7 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 	public function isApprovedCorporateCustomer() {
 		$outcome = false;
 		if(EcommerceCorporateGroupBuyableDecorator::get_only_approved_customers_can_purchase()) {
-			$approvedCustomerGroup = self::get_approved_customer_group();
+			$approvedCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
 			if($approvedCustomerGroup) {
 				if(!$this->owner->exists()) {
 					//member does not exist yet
