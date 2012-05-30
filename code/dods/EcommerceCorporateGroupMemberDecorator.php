@@ -55,7 +55,7 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 	}
 
 	/**
-	 * returns the company or Corporate Account Group of the current member
+	 * returns the MOST LIKELY (!) company or Corporate Account Group of the current member
 	 * @return NULL | Group (object)
 	 * @author: Nicolaas
 	 */

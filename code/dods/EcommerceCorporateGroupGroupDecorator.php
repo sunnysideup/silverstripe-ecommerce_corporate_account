@@ -2,14 +2,26 @@
 
 class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 
+	/**
+	 * code for the corporate customer group
+	 * @var String
+	 */
 	protected static $code = "approvedshopcustomers";
 		static function set_code($s) {self::$code = $s;}
 		static function get_code() {return self::$code;}
 
+	/**
+	 * name for the corporate customer group
+	 * @var String
+	 */
 	protected static $name = "approved shop customers";
 		static function set_name($s) {self::$name = $s;}
 		static function get_name() {return self::$name;}
 
+	/**
+	 * permission code for the corporate customer group
+	 * @var String
+	 */
 	protected static $permission_code = "APPROVEDSHOPCUSTOMER";
 		static function set_permission_code($s) {self::$permission_code = $s;}
 		static function get_permission_code() {return self::$permission_code;}
@@ -23,8 +35,19 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 		return DataObject::get_one("Group","\"Code\" = '".$customerCode."' OR \"Title\" = '".$customerName."'");
 	}
 
-	protected static $address_types = array('Physical', 'Postal');
+	/**
+	 * address types
+	 * @var array
+	 */
+	protected static $address_types = array(
+		'Physical' => "Phyical Address",
+		'Postal' => "Postal Address"
+	);
 
+	/**
+	 * fields per address type
+	 * @var array
+	 */
 	protected static $address_fields = array(
 		'Address' => 'Text',
 		'Address2' => 'Text',
@@ -34,29 +57,30 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 		'Phone' => 'Varchar'
 	);
 
-	protected static $company_group_title = 'Companies';
-		public static function set_company_group_title($s){self::$company_group_title = $s;}
-		public static function get_company_group_title(){return self::$company_group_title;}
-
-	static $company_group_code = 'companies';
-		public static function set_company_group_code($s){self::$company_group_code = $s;}
-		public static function get_company_group_code(){return self::$company_group_code;}
-
-	public static function get_company_group() {
-		$code = self::get_company_group_code();
-		return DataObject::get_one('Group', "\"Code\" = '$code'");
-	}
-
 	function extraStatics() {
-		foreach(self::$address_types as $type) {
+		foreach(self::$address_types as $fieldGroupPrefix => $fieldGroupTitle) {
 			foreach(self::$address_fields as $name => $field) {
-				$db["$type$name"] = $field;
+				$db[$fieldGroupPrefix.$name] = $field;
 			}
 		}
 		return array('db' => $db);
 	}
 
+
+	/**
+	 * Combines all group names up to the corporate group holder
+	 * @return TextField
+	 */
 	function CombinedCorporateGroupName(){
+		$string = implode(" ", $this->CombinedCorporateGroupNameAsArray());
+		return DBField::create('Text',$string);
+	}
+
+	/**
+	 * Combines all group names up to the corporate group holder
+	 * @return Array
+	 */
+	public function CombinedCorporateGroupNameAsArray(){
 		$array = array();
 		if($this->isCorporateAccount()) {
 			$array[] = $this->owner->Title;
@@ -73,27 +97,40 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 				}
 			}
 		}
-		$reverseArray = array_reverse($array);
-		return implode(" ", $reverseArray);
+		return array_reverse($array);
 	}
 
+	/**
+	 * Standard SS method
+	 *
+	 */
 	function updateCMSFields(FieldSet &$fields) {
 		if($this->owner->isCorporateAccount()) {
-			foreach(self::$address_types as $type) {
-				$cmsFields[] = new HeaderField($type);
-				foreach(self::$address_fields as $name => $field) {
-					$fieldClass = 'TextField';
-					if($field == 'Text') {
-						$fieldClass = 'TextareaField';
-					}
-					elseif($name == 'Country') {
-						$fieldClass = 'CountryDropdownField';
-					}
-					$cmsFields[] = new $fieldClass("$type$name", $name);
-				}
-			}
-			$fields->addFieldsToTab('Root.Addresses', $cmsFields);
+			$fields->addFieldsToTab('Root.Addresses', $this->CorporateAddressFieldsArray());
 		}
+	}
+
+	/**
+	 *
+	 * @return Array
+	 */
+	public function CorporateAddressFieldsArray(){
+		$fields = array();
+		foreach(self::$address_types as $fieldGroupPrefix => $fieldGroupTitle) {
+			$fields[] = new HeaderField("CombinedCorporateGroupName", $this->CombinedCorporateGroupName()->XML());
+			$fields[] = new HeaderField($fieldGroupPrefix, $fieldGroupTitle);
+			foreach(self::$address_fields as $name => $field) {
+				$fieldClass = 'TextField';
+				if($field == 'Text') {
+					$fieldClass = 'TextareaField';
+				}
+				elseif($name == 'Country') {
+					$fieldClass = 'CountryDropdownField';
+				}
+				$fields[] = new $fieldClass($fieldGroupPrefix.$name, $name);
+			}
+		}
+		return $fields;
 	}
 
 	/**
@@ -101,31 +138,26 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	 * @return Boolean
 	 */
 	public function isCorporateAccount() {
-		$companyGroup = self::get_company_group();
+		$companyGroup = self::get_approved_customer_group();
 		if($companyGroup) {
 			if($this->owner->ID && $this->owner->ParentID && $this->owner->ID != $companyGroup->ID) {
 				if($this->owner->ParentID == $companyGroup->ID) {
 					return true;
 				}
 				else {
-					if($parent = DataObject::get_by_id("Group", $this->ParentID)) { 
+					if($parent = DataObject::get_by_id("Group", $this->owner->ParentID)) {
 						return $parent->isCorporateAccount();
 					}
 				}
 			}
 		}
+		return false;
 	}
 
 	public function requireDefaultRecords() {
-		$group = self::get_company_group();
-		if(! $group) {
-			$group = new Group(array(
-				'Title' => self::$company_group_title,
-				'Description' => 'Customers hierarchy of customers by companies and their branches',
-				'Code' => self::get_company_group_code()
-			));
-			$group->write();
-			DB::alteration_message('New companies group created', 'created');
+		if(self::get_approved_customer_group()) {
+			$task = CreateEcommerceApprovedCustomerGroup();
+			$task->run();
 		}
 	}
 

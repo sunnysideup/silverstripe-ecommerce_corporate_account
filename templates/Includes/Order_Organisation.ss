@@ -1,6 +1,6 @@
 <% if BillingAddress %><% control BillingAddress %>
 		<% if Organisation %><% control Organisation %>
-<table id="AddressesTable" class="infotable">
+<table id="OrganisationTable" class="infotable">
 	<tr>
 		<th scope="col" width="100%"><% _t("OrderAddress.FOR","For") %></th>
 	</tr>
