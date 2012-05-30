@@ -159,13 +159,6 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 		return false;
 	}
 
-	public function requireDefaultRecords() {
-		if(self::get_approved_customer_group()) {
-			$task = new CreateEcommerceApprovedCustomerGroup();
-			$task->run();
-		}
-	}
-
 	/**
 	 * applies the details of the parent company to the child company
 	 * UNLESS the details for the child company are already set.
