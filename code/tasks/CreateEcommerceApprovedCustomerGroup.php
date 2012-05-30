@@ -7,15 +7,6 @@ class CreateEcommerceApprovedCustomerGroup extends BuildTask{
 	protected $description = "Create the member group for approved customers";
 
 	/**
-	 *@return DataObject (Group)
-	 **/
-	public static function get_approved_customer_group() {
-		$customerCode = EcommerceCorporateGroupGroupDecorator::get_code();
-		$customerName = EcommerceCorporateGroupGroupDecorator::get_name();
-		return DataObject::get_one("Group","\"Code\" = '".$customerCode."' OR \"Title\" = '".$customerName."'");
-	}
-
-	/**
 	 * run the task
 	 */
 	function run($request){
@@ -45,16 +36,42 @@ class CreateEcommerceApprovedCustomerGroup extends BuildTask{
 
 }
 
+class CreateEcommerceApprovedCustomerGroup_SortGroups extends BuildTask{
+
+
+	protected $title = "Sorts Approved Customer Groups Alphabetically";
+
+	protected $description = "Goes through each approved customer group and resorts based on the title";
+
+	/**
+	 * run the task
+	 */
+	function run($request){
+		$approveCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
+		if($approveCustomerGroup) {
+			$groups = DataObject::get("Group", "ParentID = ".$approveCustomerGroup->ID, "\"Title\" ASC");
+			$sort = 0;
+			foreach($groups as $group) {
+				$sort = $sort+10;
+				$group->Sort = $sort;
+				$group->write();
+			}
+		}
+	}
+
+}
 
 
 class CreateEcommerceApprovedCustomerGroup_AdminDecorator extends Extension{
 
 	static $allowed_actions = array(
-		"createecommerceapprovedcustomergroup" => true
+		"createecommerceapprovedcustomergroup" => true,
+		"createecommerceapprovedcustomergroup_sortgroups" => true
 	);
 
 	function updateEcommerceDevMenuEcommerceSetup(&$buildTasks){
 		$buildTasks[] = "createecommerceapprovedcustomergroup";
+		$buildTasks[] = "createecommerceapprovedcustomergroup_sortgroups";
 		//$buildTasks[] = "deleteobsoletemoduleowners";
 		return $buildTasks;
 	}
@@ -68,7 +85,16 @@ class CreateEcommerceApprovedCustomerGroup_AdminDecorator extends Extension{
 		$buildTask = new CreateEcommerceApprovedCustomerGroup($request);
 		$buildTask->run($request);
 		$this->owner->displayCompletionMessage($buildTask);
+	}
 
+	/**
+	 * executes build task: CreateEcommerceApprovedCustomerGroup_SortGroups
+	 *
+	 */
+	public function createecommerceapprovedcustomergroup_sortgroups($request) {
+		$buildTask = new CreateEcommerceApprovedCustomerGroup_SortGroups($request);
+		$buildTask->run($request);
+		$this->owner->displayCompletionMessage($buildTask);
 	}
 
 
