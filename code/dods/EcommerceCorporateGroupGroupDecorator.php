@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @TODO: move fields to proper system with field labels, etc....
+ * @See EcommerceConfigDB for a good example
+ */
+
 class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 
 	/**
@@ -40,8 +45,8 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	 * @var array
 	 */
 	protected static $address_types = array(
-		'Physical' => "Phyical Address",
-		'Postal' => "Postal Address"
+		'Physical' => "Delivery Address (Physical)",
+		'Postal' => "Billing Address (Postal)"
 	);
 
 	/**
