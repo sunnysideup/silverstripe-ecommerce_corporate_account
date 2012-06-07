@@ -5,12 +5,25 @@
 
 class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 
+	public function extraStatics() {
+		return array (
+			'db' => array (
+				'ApprovalEmailSent' => 'Boolean'
+			),
+		);
+	}
 
 	function augmentEcommerceFields(&$fields) {
 		if($group = $this->getCorporateAccountGroup()) {
-			$this->owner->OrganisationID = $group->ID;
-			$fields->push(new ReadonlyField("OrganisationName", _t("OrderAddress.FOR", "For"),$group->CombinedCorporateGroupName()));
+			$fields->push(new ReadonlyField("OrganisationName", _t("EcommerceCorporateGroup.FOR", "For"),$group->CombinedCorporateGroupName()->ATT()));
 		}
+	}
+
+	function updateCMSFields(&$fields) {
+		if($group = $this->getCorporateAccountGroup()) {
+			$fields->addFieldToTab("Root.Organisation", new ReadonlyField("OrganisationName", _t("EcommerceCorporateGroup.WORKSFOR", "Works For"),$group->CombinedCorporateGroupName()->ATT()));
+		}
+		$fields->addFieldToTab("Root.Organisation", new CheckboxField("ApprovalEmailSent", _t("EcommerceCorporateGroup.APPROVALEMAILSENT", "Approval Email Sent")));
 	}
 
 	/**
@@ -76,6 +89,27 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 					}
 				}
 			}
+		}
+	}
+
+	function onAfterWrite(){
+		if(!$this->owner->ApprovalEmailSent) {
+			if($this->owner->isApprovedCorporateCustomer()) {
+				$config = SiteConfig::current_site_config();
+				$ecommerceConfig = EcommerceDBConfig::current_ecommerce_db_config();
+				$email = new Email();
+				$email->setSubject(_t("EcommerceCorporateGroup.ACCOUNTAPPROVEDFOR", "Account approved for "). $config->Title);
+				$email->setBcc(Order_Email::get_from_email());
+				$email->setTemplate('EcommerceCorporateGroupApprovalEmail');
+				$email->populateTemplate(array(
+					'SiteConfig'  => $config,
+					'EcommerceConfig'  => $ecommerceConfig,
+					'Member'      => $this->owner
+				));
+				$email->send();
+			}
+			$this->owner->ApprovalEmailSent = 1;
+			$this->owner->write();
 		}
 	}
 

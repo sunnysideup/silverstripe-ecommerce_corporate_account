@@ -63,7 +63,10 @@ class CorporateAccountPage_Controller extends AccountPage_Controller {
 		return $member->CorporateAccountGroup();
 	}
 
-	function CompanyDetailsForm(){
+	function OrganisationForm(){
+
 	}
 
 }
+
+

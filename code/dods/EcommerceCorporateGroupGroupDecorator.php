@@ -59,7 +59,8 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 		'Suburb' => 'Varchar',
 		'Town' => 'Varchar',
 		'Country' => 'Varchar(3)',
-		'Phone' => 'Varchar'
+		'Phone' => 'Varchar',
+		'Fax' => 'Varchar'
 	);
 
 	function extraStatics() {
@@ -112,7 +113,12 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	function updateCMSFields(FieldSet &$fields) {
 		if($this->owner->isCorporateAccount()) {
 			$fields->addFieldsToTab('Root.Addresses', $this->CorporateAddressFieldsArray());
+			$header = _t("EcommerceCorporateGroup.NOTAPPROVEDACCOUNT", "NB: This is an approved account group.");
 		}
+		else {
+			$header = _t("EcommerceCorporateGroup.NOTAPPROVEDACCOUNT", "NB: This is NOT an approved account group");
+		}
+		$fields->addFieldToTab('Root.Members', new HeaderField("ApprovedAccountGroup", $header), "Title");
 	}
 
 	/**

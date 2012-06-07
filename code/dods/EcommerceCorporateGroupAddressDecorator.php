@@ -12,6 +12,9 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 	 */
 	function extraStatics() {
 		return array(
+			'db' => array(
+				'DataMovedFromOrganisationToAddress' => 'Boolean'
+			),
 			'has_one' => array(
 				'Organisation' => 'Group'
 			)
@@ -38,10 +41,11 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 
 	function updateCMSFields(&$fields) {
 		if($group = DataObject::get_by_id("Group", $this->owner->OrganisationID)){
-			$organiationField = $fields->dataFieldByName("OrganisationID")->performReadonlyTransformation();
-			$organiationField->setTitle(_t("OrderAddress.FOR", "For"));
-			$fields->replaceField("OrganisationID", $organiationField);
-			$fields->addFieldToTab("Root."._t("OrderAddress.FORTAB", "for"), $organiationField);
+			$organisationField = $fields->dataFieldByName("OrganisationID")->performReadonlyTransformation();
+			$organisationField->setTitle(_t("EcommerceCorporateGroup.FOR", "For"));
+			$fields->replaceField("OrganisationID", $organisationField);
+			$fields->addFieldToTab("Root."._t("EcommerceCorporateGroup.FORTAB", "for"), $organisationField);
+			$fields->removeByName("DataMovedFromOrganisationToAddress");
 		}
 		return $fields;
 	}
@@ -51,25 +55,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 	 * to pre-populate the data
 	 */
 	function populateDefaults(){
-		if(self::get_update_order_address_from_group()) {
-			if($group = $this->relatedGroup()) {
-				$this->owner->OrganisationID = $group->ID;
-				if($this instanceOf ShippingAddress) {
-					$this->owner->ShippingAddress = $group->PhysicalAddress;
-					$this->owner->ShippingAddress2 = $group->PhysicalSuburb;
-					$this->owner->ShippingCity = $group->PhysicalTown;
-					$this->owner->ShippingCountry = $group->PhysicalCountry;
-					$this->owner->ShippingPhone = $group->PhysicalPhone;
-				}
-				elseif($this instanceOf BillingAddress) {
-					$this->owner->BillingAddress = $group->PostalAddress;
-					$this->owner->BillingAddress2 = $group->PostalSuburb;
-					$this->owner->BillingCity = $group->PostalTown;
-					$this->owner->BillingCountry = $group->PostalCountry;
-					$this->owner->BillingPhone = $group->PostalPhone;
-				}
-			}
-		}
+
 	}
 
 	/**
@@ -84,26 +70,60 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 
 	/**
 	 * Standard SS Method
-	 * When saving the data, we update the company details.
+	 * When saving the data, we update the company details AND/OR the order address
 	 */
 	function onAfterWrite(){
-		if(self::get_update_group_from_order_address()) {
-			if($group = $this->relatedGroup()) {
-				if($this instanceOf ShippingAddress) {
-					$group->PhysicalAddress = $this->owner->ShippingAddress;
-					$group->PhysicalSuburb = $this->owner->ShippingAddress2;
-					$group->PhysicalTown = $this->owner->ShippingCity;
-					$group->PhysicalCountry = $this->owner->ShippingCountry;
-					$group->PhysicalPhone = $this->owner->ShippingPhone;
+		if($this->owner->DataMovedFromOrganisationToAddress) {
+			if(self::get_update_group_from_order_address()) {
+				if($group = $this->relatedGroup()) {
+					if($this->owner instanceOf ShippingAddress) {
+						$group->PhysicalAddress = $this->owner->ShippingAddress;
+						$group->PhysicalAddress2 = "";
+						$group->PhysicalSuburb = $this->owner->ShippingAddress2;
+						$group->PhysicalTown = $this->owner->ShippingCity;
+						$group->PhysicalCountry = $this->owner->ShippingCountry;
+						$group->PhysicalPhone = $this->owner->ShippingPhone;
+					}
+					elseif($this->owner instanceOf BillingAddress) {
+						$group->PostalAddress = $this->owner->Address;
+						$group->PostalAddress2 = "";
+						$group->PostalSuburb = $this->owner->Address2;
+						$group->PostalTown = $this->owner->City;
+						$group->PostalCountry = $this->owner->Country;
+						$group->PostalPhone = $this->owner->Phone;
+					}
+					else {
+						user_error("unknown address type", E_USER_WARNING);
+					}
+					$group->write();
 				}
-				elseif($this instanceOf BillingAddress) {
-					$group->PostalAddress = $this->owner->BillingAddress;
-					$group->PostalSuburb = $this->owner->BillingAddress2;
-					$group->PostalTown = $this->owner->BillingCity;
-					$group->PostalCountry = $this->owner->BillingCountry;
-					$group->PostalPhone = $this->owner->BillingPhone;
+			}
+		}
+		else {
+			if(self::get_update_order_address_from_group()) {
+				if($group = $this->relatedGroup()) {
+					if($this->owner instanceOf ShippingAddress) {
+						$this->owner->ShippingAddress = $group->PhysicalAddress." ".$group->PhysicalAddress2;
+						$this->owner->ShippingAddress2 = $group->PhysicalSuburb;
+						$this->owner->ShippingCity = $group->PhysicalTown;
+						$this->owner->ShippingCountry = $group->PhysicalCountry;
+						$this->owner->ShippingPhone = $group->PhysicalPhone;
+					}
+					elseif($this->owner instanceOf BillingAddress) {
+						$this->owner->Address = $group->PostalAddress." ".$group->PostalAddress2;
+						$this->owner->Address2 = $group->PostalSuburb;
+						$this->owner->City = $group->PostalTown;
+						$this->owner->Country = $group->PostalCountry;
+						$this->owner->Phone = $group->PostalPhone;
+					}
+					else {
+						user_error("unknown address type", E_USER_WARNING);
+					}
 				}
-				$group->write();
+			}
+			if($group) {
+				$this->owner->DataMovedFromOrganisationToAddress = 1;
+				$this->owner->write();
 			}
 		}
 	}
@@ -115,9 +135,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 	 */
 	protected function relatedGroup(){
 		if($member = $this->owner->getMemberFromOrder()) {
-			if($group = $member->getCorporateAccountGroup()) {
-				return $group;
-			}
+			return $member->getCorporateAccountGroup();
 		}
 	}
 
