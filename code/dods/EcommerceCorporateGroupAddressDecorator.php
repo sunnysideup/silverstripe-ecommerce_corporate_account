@@ -55,7 +55,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 	 * to pre-populate the data
 	 */
 	function populateDefaults(){
-
+			$this->moveAddress();
 	}
 
 	/**
@@ -73,6 +73,25 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 	 * When saving the data, we update the company details AND/OR the order address
 	 */
 	function onAfterWrite(){
+		$this->moveAddress();
+	}
+
+	/**
+	 *
+	 * returns the related group (company or corporate account) - if any
+	 * @return Group | Null
+	 */
+	protected function relatedGroup(){
+		if($member = $this->owner->getMemberFromOrder()) {
+			return $member->getCorporateAccountGroup();
+		}
+	}
+
+	/**
+	 * move address from group to order address
+	 * move address from order address back to group
+	 */
+	protected function moveAddress(){
 		if($this->owner->DataMovedFromOrganisationToAddress) {
 			if(self::get_update_group_from_order_address()) {
 				if($group = $this->relatedGroup()) {
@@ -125,17 +144,6 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 				$this->owner->DataMovedFromOrganisationToAddress = 1;
 				$this->owner->write();
 			}
-		}
-	}
-
-	/**
-	 *
-	 * returns the related group (company or corporate account) - if any
-	 * @return Group | Null
-	 */
-	protected function relatedGroup(){
-		if($member = $this->owner->getMemberFromOrder()) {
-			return $member->getCorporateAccountGroup();
 		}
 	}
 
