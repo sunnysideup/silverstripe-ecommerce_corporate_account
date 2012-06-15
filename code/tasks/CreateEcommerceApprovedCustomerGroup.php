@@ -10,23 +10,23 @@ class CreateEcommerceApprovedCustomerGroup extends BuildTask{
 	 * run the task
 	 */
 	function run($request){
-		$approveCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
+		$approvedCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
 		$approveCustomerPermissionCode = EcommerceCorporateGroupGroupDecorator::get_permission_code();
-		if(!$approveCustomerGroup) {
-			$approveCustomerGroup = new Group();
-			$approveCustomerGroup->Code = EcommerceCorporateGroupGroupDecorator::get_code();
-			$approveCustomerGroup->Title = EcommerceCorporateGroupGroupDecorator::get_name();
-			//$approveCustomerGroup->ParentID = $parentGroup->ID;
-			$approveCustomerGroup->write();
-			Permission::grant( $approveCustomerGroup->ID, $approveCustomerPermissionCode);
+		if(!$approvedCustomerGroup) {
+			$approvedCustomerGroup = new Group();
+			$approvedCustomerGroup->Code = EcommerceCorporateGroupGroupDecorator::get_code();
+			$approvedCustomerGroup->Title = EcommerceCorporateGroupGroupDecorator::get_name();
+			//$approvedCustomerGroup->ParentID = $parentGroup->ID;
+			$approvedCustomerGroup->write();
+			Permission::grant( $approvedCustomerGroup->ID, $approveCustomerPermissionCode);
 			DB::alteration_message(EcommerceCorporateGroupGroupDecorator::get_name().' Group created',"created");
 		}
-		elseif(DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '".$approveCustomerGroup->ID."' AND \"Code\" LIKE '".$approveCustomerPermissionCode."'")->numRecords() == 0 ) {
-			Permission::grant($approveCustomerGroup->ID, $approveCustomerPermissionCode);
+		elseif(DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '".$approvedCustomerGroup->ID."' AND \"Code\" LIKE '".$approveCustomerPermissionCode."'")->numRecords() == 0 ) {
+			Permission::grant($approvedCustomerGroup->ID, $approveCustomerPermissionCode);
 			DB::alteration_message(EcommerceCorporateGroupGroupDecorator::get_name().' permissions granted',"created");
 		}
-		$approveCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
-		if(!$approveCustomerGroup) {
+		$approvedCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
+		if(!$approvedCustomerGroup) {
 			user_error("could not create user group");
 		}
 		else {
@@ -47,9 +47,9 @@ class CreateEcommerceApprovedCustomerGroup_SortGroups extends BuildTask{
 	 * run the task
 	 */
 	function run($request){
-		$approveCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
-		if($approveCustomerGroup) {
-			$groups = DataObject::get("Group", "ParentID = ".$approveCustomerGroup->ID, "\"Title\" ASC");
+		$approvedCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
+		if($approvedCustomerGroup) {
+			$groups = DataObject::get("Group", "ParentID = ".$approvedCustomerGroup->ID, "\"Title\" ASC");
 			$sort = 0;
 			foreach($groups as $group) {
 				$sort = $sort+10;

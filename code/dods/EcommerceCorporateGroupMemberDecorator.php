@@ -1,10 +1,19 @@
 <?php
 
 
+/**
+ * adds functionality for Members
+ *
+ * @author nicolaas
+ */
 
 
 class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 
+	/**
+	 * Standard SS Method
+	 *
+	 */
 	public function extraStatics() {
 		return array (
 			'db' => array (
@@ -13,17 +22,30 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 		);
 	}
 
+	/**
+	 * Adds fields to the Member Ecommerce FieldSet.
+	 * In this case, we add the name of the organisation as READ-ONLY.
+	 * @param FieldSet $fields
+	 * @return FieldSet
+	 */
 	function augmentEcommerceFields(&$fields) {
-		if($group = $this->getCorporateAccountGroup()) {
-			$fields->push(new ReadonlyField("OrganisationName", _t("EcommerceCorporateGroup.FOR", "For"),$group->CombinedCorporateGroupName()->ATT()));
+		if($group = $this->owner->getCorporateAccountGroup()) {
+			$fields->push(new ReadonlyField("OrganisationName", _t("EcommerceCorporateAccount.FOR", "For"),$group->CombinedCorporateGroupName()));
 		}
+		return $fields;
 	}
 
+	/**
+	 * Standard SS Method
+	 * @param FieldSet
+	 * @return FieldSet
+	 */
 	function updateCMSFields(&$fields) {
-		if($group = $this->getCorporateAccountGroup()) {
-			$fields->addFieldToTab("Root.Organisation", new ReadonlyField("OrganisationName", _t("EcommerceCorporateGroup.WORKSFOR", "Works For"),$group->CombinedCorporateGroupName()->ATT()));
+		if($group = $this->owner->getCorporateAccountGroup()) {
+			$fields->addFieldToTab("Root.Organisation", new ReadonlyField("OrganisationName", _t("EcommerceCorporateAccount.WORKSFOR", "Works For"),$group->CombinedCorporateGroupName()->ATT()));
 		}
-		$fields->addFieldToTab("Root.Organisation", new CheckboxField("ApprovalEmailSent", _t("EcommerceCorporateGroup.APPROVALEMAILSENT", "Approval Email Sent")));
+		$fields->addFieldToTab("Root.Organisation", new CheckboxField("ApprovalEmailSent", _t("EcommerceCorporateAccount.APPROVALEMAILSENT", "Approval Email Sent")));
+		return $fields;
 	}
 
 	/**
@@ -34,34 +56,27 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 	 */
 	public function isApprovedCorporateCustomer() {
 		$outcome = false;
-		if(EcommerceCorporateGroupBuyableDecorator::get_only_approved_customers_can_purchase()) {
-			$approvedCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
-			if($approvedCustomerGroup) {
-				if(!$this->owner->exists()) {
-					//member does not exist yet
-					//return false;
-				}
-				elseif($this->owner->inGroup($approvedCustomerGroup, false)) {
-					//exception - customer is approved
-					$outcome = true;
+		if(!$this->owner->exists()) {
+			return false;
+		}
+		$approvedCustomerGroup = EcommerceCorporateGroupGroupDecorator::get_approved_customer_group();
+		if($approvedCustomerGroup) {
+			if($this->owner->inGroup($approvedCustomerGroup, false)) {
+				//exception - customer is approved
+				$outcome = true;
 
-				}
-				elseif($this->owner->IsShopAdmin() || $this->owner->IsAdmin()) {
-					//exception - administrator
-					$outcome = true;
-				}
-				else {
-					//return false;
-				}
+			}
+			elseif($this->owner->IsShopAdmin() || $this->owner->IsAdmin()) {
+				//exception - administrator
+				$outcome = true;
 			}
 			else {
-				//exception - Group not setup yet.
-				$outcome = true;
+				//return false;
 			}
 		}
 		else {
-			//exception - anyone can purchase anyway
-			$outcome = true;;
+			//exception - Group not setup yet.
+			$outcome = true;
 		}
 		//standard answer....
 		return $outcome;
@@ -70,10 +85,10 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 	/**
 	 * returns the MOST LIKELY (!) company or Corporate Account Group of the current member
 	 * @return NULL | Group (object)
-	 * @author: Nicolaas
 	 */
-	function CorporateAccountGroup(){return $this->getCorporateAccountGroup();}
+	function CorporateAccountGroup(){return $this->owner->getCorporateAccountGroup();}
 	function getCorporateAccountGroup() {
+		$groupArray = array();
 		if($this->owner->exists()) {
 			if($this->owner->isApprovedCorporateCustomer()) {
 				$groups = $this->owner->Groups();
@@ -81,35 +96,45 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 					foreach($groups as $group) {
 						//it is a corporate account (business)
 						if($group->isCorporateAccount()) {
-							//it does not have a child group
-							if(!DataObject::get_one("Group", "\"ParentID\" = ".$group->ID)) {
-								return $group;
-							}
+							//if therer are two at the same level of the hierarchy, then we just take one!
+							$groupArray[$group->numberOfParentGroups()] = $group;
 						}
 					}
 				}
 			}
 		}
+		//we prefer a "front-line" security group (more specific)
+		if(count($groupArray)) {
+			krsort($groupArray);
+			foreach($groupArray as $group) {
+				return $group;
+			}
+		}
 	}
 
+	/**
+	 * standard SS Method
+	 * Sends an email to the member letting her / him know that the account has been approved.
+	 */
 	function onAfterWrite(){
-		if(!$this->owner->ApprovalEmailSent) {
-			if($this->owner->isApprovedCorporateCustomer()) {
+		if($this->owner->isApprovedCorporateCustomer()) {
+			if(!$this->owner->ApprovalEmailSent) {
 				$config = SiteConfig::current_site_config();
 				$ecommerceConfig = EcommerceDBConfig::current_ecommerce_db_config();
 				$email = new Email();
-				$email->setSubject(_t("EcommerceCorporateGroup.ACCOUNTAPPROVEDFOR", "Account approved for "). $config->Title);
+				$email->setTo($member->Email);
+				$email->setSubject(_t("EcommerceCorporateAccount.ACCOUNTAPPROVEDFOR", "Account approved for "). $config->Title);
 				$email->setBcc(Order_Email::get_from_email());
 				$email->setTemplate('EcommerceCorporateGroupApprovalEmail');
 				$email->populateTemplate(array(
-					'SiteConfig'  => $config,
+					'SiteConfig'       => $config,
 					'EcommerceConfig'  => $ecommerceConfig,
-					'Member'      => $this->owner
+					'Member'           => $this->owner
 				));
 				$email->send();
+				$this->owner->ApprovalEmailSent = 1;
+				$this->owner->write();
 			}
-			$this->owner->ApprovalEmailSent = 1;
-			$this->owner->write();
 		}
 	}
 

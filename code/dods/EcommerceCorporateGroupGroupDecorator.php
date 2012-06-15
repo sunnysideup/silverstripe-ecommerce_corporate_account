@@ -1,6 +1,11 @@
 <?php
 
+
 /**
+ * adds functionality for groups (organisations)
+ * The key here is that we have one approved group and all
+ * groups underneath this one (child groups) are automatically approved.
+ * @author nicolaas
  * @TODO: move fields to proper system with field labels, etc....
  * @See EcommerceConfigDB for a good example
  */
@@ -69,7 +74,12 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 				$db[$fieldGroupPrefix.$name] = $field;
 			}
 		}
-		return array('db' => $db);
+		return array(
+			'db' => $db,
+			'casting' => array(
+				'CombinedCorporateGroupName' => 'Text'
+			)
+		);
 	}
 
 
@@ -77,9 +87,10 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	 * Combines all group names up to the corporate group holder
 	 * @return TextField
 	 */
-	function CombinedCorporateGroupName(){
-		$string = implode(" ", $this->CombinedCorporateGroupNameAsArray());
-		return DBField::create('Text',$string);
+	function CombinedCorporateGroupName(){return $this->owner->getCombinedCorporateGroupName();}
+	function getCombinedCorporateGroupName(){
+		$string = implode(" ", $this->owner->CombinedCorporateGroupNameAsArray());
+		return $string;
 	}
 
 	/**
@@ -88,19 +99,22 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	 */
 	public function CombinedCorporateGroupNameAsArray(){
 		$array = array();
-		if($this->isCorporateAccount()) {
+		if($this->owner->isCorporateAccount()) {
 			$array[] = $this->owner->Title;
 		}
-		if($this->owner->ParentID) {
-			$parent = DataObject::get_by_id("Group", $this->owner->ParentID);
-			if($parent && $parent->isCorporateAccount()) {
-				$array[] = $parent->Title;
-				if($parent->ParentID) {
-					$grandParent = DataObject::get_by_id("Group", $parent->ParentID);
-					if($grandParent && $grandParent->isCorporateAccount()) {
-						$array[] = $grandParent->Title;
-					}
+		$approvedCustomerGroup = self::get_approved_customer_group();
+		if($approvedCustomerGroup) {
+			$item = $this->owner;
+			$n = 0;
+			while($item && $n < 99) {
+				$item = DataObject::get_by_id("Group", $item->ParentID);
+				if(!$item->owner->isCorporateAccount()) {
+					$item = null;
 				}
+				elseif($item->ID != $approvedCustomerGroup->ID) {
+					$array[] = $item->Title;
+				}
+				$n++;
 			}
 		}
 		return array_reverse($array);
@@ -112,7 +126,7 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	 */
 	function updateCMSFields(FieldSet &$fields) {
 		if($this->owner->isCorporateAccount()) {
-			$fields->addFieldsToTab('Root.Addresses', $this->CorporateAddressFieldsArray());
+			$fields->addFieldsToTab('Root.Addresses', $this->owner->CorporateAddressFieldsArray());
 			$header = _t("EcommerceCorporateGroup.NOTAPPROVEDACCOUNT", "NB: This is an approved account group.");
 		}
 		else {
@@ -122,13 +136,15 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	}
 
 	/**
-	 *
+	 * returns an array of fields for the corporate account
 	 * @return Array
 	 */
 	public function CorporateAddressFieldsArray(){
 		$fields = array();
+		if($this->owner->Title != $this->owner->CombinedCorporateGroupName()) {
+			$fields[] = new ReadOnlyField("CombinedCorporateGroupName",_t("EcommerceCorporateGroup.FULLNAME", "Full Name") , $this->owner->CombinedCorporateGroupName());
+		}
 		foreach(self::$address_types as $fieldGroupPrefix => $fieldGroupTitle) {
-			$fields[] = new HeaderField("CombinedCorporateGroupName", $this->CombinedCorporateGroupName()->XML());
 			$fields[] = new HeaderField($fieldGroupPrefix, $fieldGroupTitle);
 			foreach(self::$address_fields as $name => $field) {
 				$fieldClass = 'TextField';
@@ -145,24 +161,44 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	}
 
 	/**
-	 * Is the current group part of the corporate account
+	 * Is the current group part of the corporate account?
 	 * @return Boolean
 	 */
 	public function isCorporateAccount() {
-		$companyGroup = self::get_approved_customer_group();
-		if($companyGroup) {
-			if($this->owner->ID && $this->owner->ParentID && $this->owner->ID != $companyGroup->ID) {
-				if($this->owner->ParentID == $companyGroup->ID) {
-					return true;
-				}
-				else {
-					if($parent = DataObject::get_by_id("Group", $this->owner->ParentID)) {
+		if($this->owner->exists()) {
+			$approvedCustomerGroup = self::get_approved_customer_group();
+			if($approvedCustomerGroup) {
+				if($this->owner->ParentID) {
+					if($this->owner->ParentID == $approvedCustomerGroup->ID || $this->owner->ID = $approvedCustomerGroup->ID) {
+						return true;
+					}
+					elseif($parent = DataObject::get_by_id("Group", $this->owner->ParentID)) {
 						return $parent->isCorporateAccount();
 					}
 				}
 			}
+			else {
+				user_error("No approved customer group has been setup", E_USER_NOTICE);
+			}
 		}
 		return false;
+	}
+
+	/**
+	 * returns the level in the hierarchy
+	 * 0 = no parents
+	 * 12 = twelve parent groups
+	 * Max of 99... just in case.
+	 * @return Int
+	 */
+	public function NumberOfParentGroups(){
+		$n = 0 ;
+		$item = $this->owner;
+		while($item && $n < 99) {
+			$item = DataObject::get_by_id("Group", $item->ParentID);
+			$n++;
+		}
+		return $n;
 	}
 
 	/**
@@ -173,7 +209,7 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	public function onAfterWrite() {
 		$statics = $this->extraStatics();
 		$fields = $statics["db"];
-		if($this->isCorporateAccount()) {
+		if($this->owner->isCorporateAccount()) {
 			if($childGroup = DataObject::get_one("Group", "\"ParentID\" = ".$this->owner->ID)) {
 				$write = false;
 				foreach($fields as $field) {
@@ -195,5 +231,6 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 			}
 		}
 	}
+
 
 }

@@ -1,6 +1,10 @@
 <?php
 
-
+/**
+ * adds functionality for order address
+ *
+ * @author nicolaas
+ */
 
 
 class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
@@ -38,13 +42,16 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 		static function set_update_order_address_from_group($b) {self::$update_order_address_from_group = $b;}
 		static function get_update_order_address_from_group() {return self::$update_order_address_from_group;}
 
-
+	/**
+	 * standard SS method
+	 * @return FieldSet
+	 */
 	function updateCMSFields(&$fields) {
 		if($group = DataObject::get_by_id("Group", $this->owner->OrganisationID)){
 			$organisationField = $fields->dataFieldByName("OrganisationID")->performReadonlyTransformation();
-			$organisationField->setTitle(_t("EcommerceCorporateGroup.FOR", "For"));
+			$organisationField->setTitle(_t("EcommerceCorporateAccount.FOR", "For"));
 			$fields->replaceField("OrganisationID", $organisationField);
-			$fields->addFieldToTab("Root."._t("EcommerceCorporateGroup.FORTAB", "for"), $organisationField);
+			$fields->addFieldToTab("Root."._t("EcommerceCorporateAccount.FORTAB", "for"), $organisationField);
 			$fields->removeByName("DataMovedFromOrganisationToAddress");
 		}
 		return $fields;
@@ -55,7 +62,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 	 * to pre-populate the data
 	 */
 	function populateDefaults(){
-			$this->moveAddress();
+		$this->owner->moveAddress();
 	}
 
 	/**
@@ -63,7 +70,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 	 * When saving the data, we update the company details.
 	 */
 	function onBeforeWrite(){
-		if($group = $this->relatedGroup()) {
+		if($group = $this->owner->relatedGroup()) {
 			$this->owner->OrganisationID = $group->ID;
 		}
 	}
@@ -73,7 +80,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 	 * When saving the data, we update the company details AND/OR the order address
 	 */
 	function onAfterWrite(){
-		$this->moveAddress();
+		$this->owner->moveAddress();
 	}
 
 	/**
@@ -94,7 +101,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 	protected function moveAddress(){
 		if($this->owner->DataMovedFromOrganisationToAddress) {
 			if(self::get_update_group_from_order_address()) {
-				if($group = $this->relatedGroup()) {
+				if($group = $this->owner->relatedGroup()) {
 					if($this->owner instanceOf ShippingAddress) {
 						$group->PhysicalAddress = $this->owner->ShippingAddress;
 						$group->PhysicalAddress2 = "";

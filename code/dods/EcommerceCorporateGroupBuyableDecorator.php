@@ -1,10 +1,15 @@
 <?php
 
+/**
+ * adds functionality for buyables
+ *
+ * @author nicolaas
+ */
 
 class EcommerceCorporateGroupBuyableDecorator extends DataObjectDecorator {
+
 	/**
 	 * If set to true, only approved customers can make purchases
-	 * To be
 	 * @var Boolean $only_approved_customers_can_purchase
 	 */
 	protected static $only_approved_customers_can_purchase = true;
@@ -16,6 +21,9 @@ class EcommerceCorporateGroupBuyableDecorator extends DataObjectDecorator {
 	 * @return Boolean
 	 */
 	public function isApprovedCorporateCustomer() {
+		if(!EcommerceCorporateGroupBuyableDecorator::get_only_approved_customers_can_purchase()) {
+			return true;
+		}
 		$member = Member::currentUser();
 		if(!$member ) {
 			$member = new Member();
@@ -30,7 +38,7 @@ class EcommerceCorporateGroupBuyableDecorator extends DataObjectDecorator {
 	 * @return Double | NULL | Currency (object)
 	 */
 	function updateCalculatedPrice($price){
-		if($this->isApprovedCorporateCustomer()) {
+		if($this->owner->isApprovedCorporateCustomer()) {
 			return null;
 		}
 		if(is_object($price)) {
@@ -40,7 +48,6 @@ class EcommerceCorporateGroupBuyableDecorator extends DataObjectDecorator {
 		return 0;
 	}
 
-
 	/**
 	 * non-approved customers should not be able to see the price
 	 * Note that because it is an extension is actually returns an array!!
@@ -48,7 +55,7 @@ class EcommerceCorporateGroupBuyableDecorator extends DataObjectDecorator {
 	 * @return Double | NULL | Money (object)
 	 */
 	function  updateDisplayPrice($moneyObject){
-		if($this->isApprovedCorporateCustomer()) {
+		if($this->owner->isApprovedCorporateCustomer()) {
 			return null;
 		}
 		if(is_object($moneyObject)) {
@@ -65,7 +72,7 @@ class EcommerceCorporateGroupBuyableDecorator extends DataObjectDecorator {
 	 * @return Boolean | NULL
 	 */
 	public function canPurchase($member = null){
-		if($this->isApprovedCorporateCustomer()) {
+		if($this->owner->isApprovedCorporateCustomer()) {
 			//return null so that the original canPurchase is not affected.
 			//MUST return null here
 			return null;

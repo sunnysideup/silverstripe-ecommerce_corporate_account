@@ -1,4 +1,4 @@
 Dear $Member.FirstName
 
-Your account has been approved.
+Your account on $SiteConfig.Title has been approved.
 

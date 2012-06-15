@@ -24,10 +24,10 @@ class OrderMarker extends OrderModifier {
 	);
 
 	public static $singular_name = "Purchase Order";
-		function i18n_single_name() { return _t("OrderMarker.ORDERMARKER", "Modifier Purchase Order");}
+		function i18n_single_name() { return _t("EcommerceCorporateAccount.ORDERMARKER", "Purchase Order");}
 
 	public static $plural_name = "Purchase Orders";
-		function i18n_plural_name() { return _t("OrderMarker.ORDERMARKERS", "Modifier Purchase Orders");}
+		function i18n_plural_name() { return _t("EcommerceCorporateAccount.ORDERMARKERS", "Purchase Orders");}
 
 // ######################################## *** cms variables + functions (e.g. getCMSFields, $searchableFields)
 
@@ -89,7 +89,7 @@ class OrderMarker extends OrderModifier {
 			$optionalValidator = null;
 		}
 		$actions = new FieldSet(
-			new FormAction('submit', _t("OrderModifier.UPDATEORDER", "Update Order"))
+			new FormAction('submit', _t("EcommerceCorporateAccount.UPDATEORDER", "Update Order"))
 		);
 		return new OrderMarker_Form($optionalController, 'OrderMarker', $fields, $actions, $optionalValidator);
 	}
@@ -109,7 +109,7 @@ class OrderMarker extends OrderModifier {
 // ######################################## *** calculate database fields: protected function Live[field name]  ... USES CALCULATED VALUES
 
 	protected function LiveName() {
-		return "Order For: ".$this->LiveOrderFor();
+		return _t("EcommerceCorporateAccount.ORDERFOR", "Order For")." ".$this->LiveOrderFor();
 	}
 
 	protected function LiveOrderFor() {
@@ -169,11 +169,11 @@ class OrderMarker_Form extends OrderModifierForm {
 						$modifier->updateOrderFor(Convert::raw2sql($data["OrderFor"]));
 						$modifier->write();
 					}
-					return ShoppingCart::singleton()->setMessageAndReturn(_t("OrderMarker.UPDATED", "Order saved as '".Convert::raw2xml($data["OrderFor"]))."'.", "good");
+					return ShoppingCart::singleton()->setMessageAndReturn(_t("EcommerceCorporateAccount.UPDATED", "Order saved as '".Convert::raw2xml($data["OrderFor"]))."'.", "good");
 				}
 			}
 		}
-		return ShoppingCart::singleton()->setMessageAndReturn(_t("OrderMarker.UPDATED", "Order marker could not be saved"), "bad");
+		return ShoppingCart::singleton()->setMessageAndReturn(_t("EcommerceCorporateAccount.UPDATED", "Order marker could not be saved"), "bad");
 	}
 }
 
