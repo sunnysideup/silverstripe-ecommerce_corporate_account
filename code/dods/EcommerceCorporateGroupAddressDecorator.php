@@ -88,7 +88,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 	 * returns the related group (company or corporate account) - if any
 	 * @return Group | Null
 	 */
-	protected function relatedGroup(){
+	public function relatedGroup(){
 		if($member = $this->owner->getMemberFromOrder()) {
 			return $member->getCorporateAccountGroup();
 		}
@@ -98,7 +98,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 	 * move address from group to order address
 	 * move address from order address back to group
 	 */
-	protected function moveAddress(){
+	public function moveAddress(){
 		if($this->owner->DataMovedFromOrganisationToAddress) {
 			if(self::get_update_group_from_order_address()) {
 				if($group = $this->owner->relatedGroup()) {
