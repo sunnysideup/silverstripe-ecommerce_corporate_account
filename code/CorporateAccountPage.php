@@ -59,7 +59,6 @@ class CorporateAccountPage extends AccountPage {
 		);
 	}
 
-
 	/**
 	 * returns the members of the current Group.
 	 * Includes the current member.
@@ -99,13 +98,6 @@ class CorporateAccountPage extends AccountPage {
 		}
 	}
 
-	/**
-	 * tells us whether the current members account group is approved.
-	 * @return Boolean
-	 */
-	function IsApprovedAccountGroup(){
-		return $this->AccountGroup() ? true : false;
-	}
 
 }
 
@@ -137,6 +129,14 @@ class CorporateAccountPage_Controller extends AccountPage_Controller {
 	 */
 	function OrganisationForm(){
 		return new CorporateAccountOrganisationForm($this, "OrganisationForm", $this->AccountMember(), $this->AccountGroup());
+	}
+
+	/**
+	 * tells us whether the current members account group is approved.
+	 * @return Boolean
+	 */
+	function IsApprovedAccountGroup(){
+		return $this->AccountGroup() ? true : false;
 	}
 
 
