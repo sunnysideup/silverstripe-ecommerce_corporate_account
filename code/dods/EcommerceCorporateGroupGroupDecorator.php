@@ -145,7 +145,8 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 			$fields[] = new ReadOnlyField("CombinedCorporateGroupName",_t("EcommerceCorporateGroup.FULLNAME", "Full Name") , $this->owner->CombinedCorporateGroupName());
 		}
 		foreach(self::$address_types as $fieldGroupPrefix => $fieldGroupTitle) {
-			$fields[] = new HeaderField($fieldGroupPrefix, $fieldGroupTitle);
+			$composite = new CompositeField();
+			$composite->setID($fieldGroupPrefix);
 			foreach(self::$address_fields as $name => $field) {
 				$fieldClass = 'TextField';
 				if($field == 'Text') {
@@ -154,8 +155,9 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 				elseif($name == 'Country') {
 					$fieldClass = 'CountryDropdownField';
 				}
-				$fields[] = new $fieldClass($fieldGroupPrefix.$name, $name);
+				$composite->push(new $fieldClass($fieldGroupPrefix.$name, $name));
 			}
+			$fields[] = $composite;
 		}
 		return $fields;
 	}
