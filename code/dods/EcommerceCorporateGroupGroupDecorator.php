@@ -50,8 +50,8 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	 * @var array
 	 */
 	protected static $address_types = array(
-		'Physical' => "Delivery Address (Physical)",
-		'Postal' => "Billing Address (Postal)"
+		'Postal' => "Billing Address (Postal)",
+		'Physical' => "Delivery Address (Physical)"
 	);
 
 	/**
@@ -147,6 +147,7 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 		foreach(self::$address_types as $fieldGroupPrefix => $fieldGroupTitle) {
 			$composite = new CompositeField();
 			$composite->setID($fieldGroupPrefix);
+			$composite->push(new HeaderField($fieldGroupPrefix."Header", $fieldGroupTitle, 4));
 			foreach(self::$address_fields as $name => $field) {
 				$fieldClass = 'TextField';
 				if($field == 'Text') {
