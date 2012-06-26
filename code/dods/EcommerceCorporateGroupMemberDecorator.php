@@ -42,7 +42,7 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 	 */
 	function updateCMSFields(&$fields) {
 		if($group = $this->owner->getCorporateAccountGroup()) {
-			$fields->addFieldToTab("Root.Organisation", new ReadonlyField("OrganisationName", _t("EcommerceCorporateAccount.WORKSFOR", "Works For"),$group->CombinedCorporateGroupName()->ATT()));
+			$fields->addFieldToTab("Root.Organisation", new ReadonlyField("OrganisationName", _t("EcommerceCorporateAccount.WORKSFOR", "Works For"),$group->CombinedCorporateGroupName()));
 		}
 		$fields->addFieldToTab("Root.Organisation", new CheckboxField("ApprovalEmailSent", _t("EcommerceCorporateAccount.APPROVALEMAILSENT", "Approval Email Sent")));
 		return $fields;
