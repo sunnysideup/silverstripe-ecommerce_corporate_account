@@ -92,10 +92,23 @@ class CorporateAccountPage extends AccountPage {
 	 * @return NULL | DataObjectSet
 	 */
 	function GroupMembers() {
+		$members = null;
 		$group = $this->AccountGroup();
 		if($group) {
-			return $group->Members();
+			$members = $group->Members();
+			if($members && $members->count()) {
+				$currentMember = Member::currentUser();
+				foreach($members as $member) {
+					if($currentMember->ID == $member->ID) {
+						$member->LinkingMode = "current";
+					}
+					else {
+						$member->LinkingMode = "link";
+					}
+				}
+			}
 		}
+		return $members;
 	}
 
 }

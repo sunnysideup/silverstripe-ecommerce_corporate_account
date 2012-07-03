@@ -8,7 +8,7 @@
 		<% if GroupMembers %>
 			<ul>
 			<% control GroupMembers %>
-				<li>$Name ($Email)</li>
+				<li class="$LinkingMode">$Name ($Email)</li>
 			<% end_control %>
 			</ul>
 		<% else %>
