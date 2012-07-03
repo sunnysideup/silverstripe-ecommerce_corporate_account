@@ -60,18 +60,6 @@ class CorporateAccountPage extends AccountPage {
 	}
 
 	/**
-	 * returns the members of the current Group.
-	 * Includes the current member.
-	 * @return NULL | DataObjectSet
-	 */
-	function GroupMembers() {
-		$group = $this->AccountGroup();
-		if($group) {
-			return $group->Members();
-		}
-	}
-
-	/**
 	 * overloads AccountMember from AccountPage
 	 * only returns a member if it is an approved member
 	 * @return NULL | Member

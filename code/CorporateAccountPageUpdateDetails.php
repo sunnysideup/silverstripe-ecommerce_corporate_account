@@ -32,13 +32,24 @@ class CorporateAccountPageUpdateDetails extends CorporateAccountPage {
 
 class CorporateAccountPageUpdateDetails_Controller extends CorporateAccountPage_Controller {
 
-
 	/**
 	 * returns a form... You can either update your details or request approval
 	 * @return CorporateAccountOrganisationForm
 	 */
 	function OrganisationForm(){
 		return new CorporateAccountOrganisationForm($this, "OrganisationForm", $this->AccountMember(), $this->AccountGroup());
+	}
+
+	/**
+	 * returns the members of the current Group.
+	 * Includes the current member.
+	 * @return NULL | DataObjectSet
+	 */
+	function GroupMembers() {
+		$group = $this->AccountGroup();
+		if($group) {
+			return $group->Members();
+		}
 	}
 
 
