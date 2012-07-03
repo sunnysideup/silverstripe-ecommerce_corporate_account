@@ -40,17 +40,7 @@ class CorporateAccountPageUpdateDetails_Controller extends CorporateAccountPage_
 		return new CorporateAccountOrganisationForm($this, "OrganisationForm", $this->AccountMember(), $this->AccountGroup());
 	}
 
-	/**
-	 * returns the members of the current Group.
-	 * Includes the current member.
-	 * @return NULL | DataObjectSet
-	 */
-	function GroupMembers() {
-		$group = $this->AccountGroup();
-		if($group) {
-			return $group->Members();
-		}
-	}
+
 
 
 
