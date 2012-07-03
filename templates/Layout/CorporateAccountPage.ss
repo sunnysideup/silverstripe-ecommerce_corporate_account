@@ -1,13 +1,15 @@
-<div id="CorporateAccountPage">
+<div id="CorporateAccountPage" class="mainSection content-container noSidebar">
+
+	<% if Content %><div id="ContentHolder">$Content</div><% end_if %>
 
 	<% if IsApprovedAccountGroup %>
-
 	<div id="CorporateAccountPageAccountPastOrdersOuter" class="outerHolder">
-		<h2><% _t("EcommerceCorporateAccount.OTHERUSERS", "Orders from") %> $GroupTitle</h2>
+		<h3><% _t("EcommerceCorporateAccount.ORDERSFROM", "Orders from") %> $GroupTitle</h3>
 		<% include AccountPastOrders %>
 	</div>
-
 	<% end_if %>
+
+	<% if Form %><div id="FormHolder">$Form</div><% end_if %>
 
 
 </div>

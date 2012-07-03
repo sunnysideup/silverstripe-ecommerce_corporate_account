@@ -1,4 +1,6 @@
-<div id="CorporateAccountPage">
+<div id="CorporateAccountPageUserDetails" class="mainSection content-container noSidebar">
+
+	<% if Content %><div id="ContentHolder">$Content</div><% end_if %>
 
 <% if IsApprovedAccountGroup %>
 	<div id="CorporateAccountPageOtherAccountsOuter" class="outerHolder">
@@ -16,9 +18,10 @@
 	<% end_if %>
 
 	<div id="CorporateAccountPageOrganisationFormOuter" class="outerHolder">
-		<h3><% _t("EcommerceCorporateAccount.UPDATEYOURDETAILS", "Update your details") %></h3>
+		<h3><h3><% _t("EcommerceCorporateAccount.UPDATEDETAILSFOR", "Update details for") %> $GroupTitle</h3></h3>
 		$OrganisationForm
 	</div>
 
+	<% if Form %><div id="FormHolder">$Form</div><% end_if %>
 
 </div>
