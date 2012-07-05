@@ -122,7 +122,7 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 				$config = SiteConfig::current_site_config();
 				$ecommerceConfig = EcommerceDBConfig::current_ecommerce_db_config();
 				$email = new Email();
-				$email->setTo($member->Email);
+				$email->setTo($this->owner->Email);
 				$email->setSubject(_t("EcommerceCorporateAccount.ACCOUNTAPPROVEDFOR", "Account approved for "). $config->Title);
 				$email->setBcc(Order_Email::get_from_email());
 				$email->setTemplate('EcommerceCorporateGroupApprovalEmail');
