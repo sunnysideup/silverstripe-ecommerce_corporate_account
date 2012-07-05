@@ -45,6 +45,7 @@ class EcommerceCorporateGroupMemberDecorator extends DataObjectDecorator {
 			$fields->addFieldToTab("Root.Organisation", new ReadonlyField("OrganisationName", _t("EcommerceCorporateAccount.WORKSFOR", "Works For"),$group->CombinedCorporateGroupName()));
 		}
 		$fields->addFieldToTab("Root.Organisation", new CheckboxField("ApprovalEmailSent", _t("EcommerceCorporateAccount.APPROVALEMAILSENT", "Approval Email Sent")));
+		$fields->removeByName("Password");
 		return $fields;
 	}
 
