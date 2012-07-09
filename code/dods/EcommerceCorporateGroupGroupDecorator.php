@@ -126,7 +126,7 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	 */
 	function updateCMSFields(FieldSet &$fields) {
 		if($this->owner->isCorporateAccount()) {
-			$fields->addFieldsToTab('Root.Addresses', $this->owner->CorporateAddressFieldsArray());
+			$fields->addFieldsToTab('Root.Addresses', $this->owner->CorporateAddressFieldsArray($forCMS = true));
 			$header = _t("EcommerceCorporateGroup.NOTAPPROVEDACCOUNT", "NB: This is an approved account group.");
 		}
 		else {
@@ -139,13 +139,18 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 	 * returns an array of fields for the corporate account
 	 * @return Array
 	 */
-	public function CorporateAddressFieldsArray(){
+	public function CorporateAddressFieldsArray($forCMS = false){
 		$fields = array();
 		if($this->owner->Title != $this->owner->CombinedCorporateGroupName()) {
 			$fields[] = new ReadOnlyField("CombinedCorporateGroupName",_t("EcommerceCorporateGroup.FULLNAME", "Full Name") , $this->owner->CombinedCorporateGroupName());
 		}
 		foreach(self::$address_types as $fieldGroupPrefix => $fieldGroupTitle) {
-			$composite = new CompositeField();
+			if($forCMS) {
+				$composite = new Tab($fieldGroupPrefix, $fieldGroupTitle);
+			}
+			else {
+				$composite = new CompositeField();
+			}
 			$composite->setID($fieldGroupPrefix);
 			$composite->push(new HeaderField($fieldGroupPrefix."Header", $fieldGroupTitle, 4));
 			foreach(self::$address_fields as $name => $field) {
