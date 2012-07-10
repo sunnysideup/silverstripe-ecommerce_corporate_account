@@ -146,13 +146,13 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 		}
 		foreach(self::$address_types as $fieldGroupPrefix => $fieldGroupTitle) {
 			if($forCMS) {
-				$composite = new Tab($fieldGroupPrefix, $fieldGroupTitle);
+				$fields[] = new HeaderField($fieldGroupPrefix."Header", $fieldGroupTitle, 4);
 			}
 			else {
 				$composite = new CompositeField();
+				$composite->setID($fieldGroupPrefix);
+				$composite->push(new HeaderField($fieldGroupPrefix."Header", $fieldGroupTitle, 4));
 			}
-			$composite->setID($fieldGroupPrefix);
-			$composite->push(new HeaderField($fieldGroupPrefix."Header", $fieldGroupTitle, 4));
 			foreach(self::$address_fields as $name => $field) {
 				$fieldClass = 'TextField';
 				if($field == 'Text') {
@@ -161,9 +161,19 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 				elseif($name == 'Country') {
 					$fieldClass = 'CountryDropdownField';
 				}
-				$composite->push(new $fieldClass($fieldGroupPrefix.$name, $name));
+				if($forCMS) {
+					$fields[] =  new $fieldClass($fieldGroupPrefix.$name, $name);
+				}
+				else {
+					$composite->push(new $fieldClass($fieldGroupPrefix.$name, $name));
+				}
 			}
-			$fields[] = $composite;
+			if($forCMS) {
+				//
+			}
+			else {
+				$fields[] = $composite;
+			}
 		}
 		return $fields;
 	}
