@@ -2,10 +2,10 @@
 		<% if Organisation %><% control Organisation %>
 <table id="OrganisationTable" class="infotable">
 	<tr>
-		<th scope="col" width="100%"><% _t("EcommerceCorporateAccount.FOR","For") %></th>
+		<th scope="col"><% _t("EcommerceCorporateAccount.FOR","For") %></th>
 	</tr>
 	<tr>
-		<td width="100%">$CombinedCorporateGroupName</td>
+		<td>$CombinedCorporateGroupName</td>
 	</tr>
 </table>
 		<% end_control %><% end_if %>
