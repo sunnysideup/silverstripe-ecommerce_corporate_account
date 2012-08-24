@@ -107,6 +107,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 						$group->PhysicalAddress2 = "";
 						$group->PhysicalSuburb = $this->owner->ShippingAddress2;
 						$group->PhysicalTown = $this->owner->ShippingCity;
+						$group->PhysicalPostalCode = $this->owner->ShippingPostalCode;
 						$group->PhysicalCountry = $this->owner->ShippingCountry;
 						$group->PhysicalPhone = $this->owner->ShippingPhone;
 					}
@@ -115,6 +116,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 						$group->PostalAddress2 = "";
 						$group->PostalSuburb = $this->owner->Address2;
 						$group->PostalTown = $this->owner->City;
+						$group->PostalPostalCode = $this->owner->PostalCode;
 						$group->PostalCountry = $this->owner->Country;
 						$group->PostalPhone = $this->owner->Phone;
 					}
@@ -132,6 +134,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 						$this->owner->ShippingAddress = $group->PhysicalAddress." ".$group->PhysicalAddress2;
 						$this->owner->ShippingAddress2 = $group->PhysicalSuburb;
 						$this->owner->ShippingCity = $group->PhysicalTown;
+						$this->owner->ShippingPostalCode = $group->PhysicalPostalCode;
 						$this->owner->ShippingCountry = $group->PhysicalCountry;
 						$this->owner->ShippingPhone = $group->PhysicalPhone;
 					}
@@ -139,6 +142,7 @@ class EcommerceCorporateGroupAddressDecorator extends DataObjectDecorator {
 						$this->owner->Address = $group->PostalAddress." ".$group->PostalAddress2;
 						$this->owner->Address2 = $group->PostalSuburb;
 						$this->owner->City = $group->PostalTown;
+						$this->owner->PostalCode = $group->PostalPostalCode;
 						$this->owner->Country = $group->PostalCountry;
 						$this->owner->Phone = $group->PostalPhone;
 					}

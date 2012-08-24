@@ -63,6 +63,7 @@ class EcommerceCorporateGroupGroupDecorator extends DataObjectDecorator {
 		'Address2' => 'Text',
 		'Suburb' => 'Varchar',
 		'Town' => 'Varchar',
+		'PostalCode' => 'Varchar',
 		'Country' => 'Varchar(3)',
 		'Phone' => 'Varchar',
 		'Fax' => 'Varchar'
