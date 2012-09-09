@@ -9,6 +9,25 @@
 
 class CorporateAccountPageUpdateDetails extends CorporateAccountPage {
 
+
+	/**
+	 * Standard SS variable
+	 */
+	public static $icon = 'ecommerce_corporate_account/images/icons/CorporateAccountPageUpdateDetails';
+
+	/**
+	 * Standard SS variable.
+	 */
+	public static $singular_name = "Corporate Account Update Details Page";
+		function i18n_singular_name() { return _t("CorporateAccount.CORPORATEACCOUNTUPDATEDETAILSPAGE", "Corporate Account Update Details Page");}
+
+	/**
+	 * Standard SS variable.
+	 */
+	public static $plural_name = "Corporate Account Update Details Pages";
+		function i18n_plural_name() { return _t("CorporateAccount.CORPORATEACCOUNTUPDATEDETAILSPAGES", "Corporate Account Update Details Pages"); }
+
+
 	/**
 	 * standard SS method
 	 * @return Boolean

@@ -73,7 +73,7 @@ class OrderMarker extends OrderModifier {
 // ######################################## *** form functions (e. g. showform and getform)
 
 
-	public function showForm() {
+	public function ShowForm() {
 		return $this->Order()->Items();
 	}
 

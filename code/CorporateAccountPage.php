@@ -13,10 +13,24 @@
 
 class CorporateAccountPage extends AccountPage {
 
+
+	/**
+	 * Standard SS variable.
+	 */
+	public static $singular_name = "Corporate Account Page";
+		function i18n_singular_name() { return _t("CorporateAccount.CORPORATEACCOUNTPAGE", "Corporate Account Page");}
+
+	/**
+	 * Standard SS variable.
+	 */
+	public static $plural_name = "Corporate Account Pages";
+		function i18n_plural_name() { return _t("CorporateAccount.CORPORATEACCOUNTPAGES", "Corporate Account Pages"); }
+
+
 	/**
 	 * Standard SS variable
 	 */
-	public static $icon = 'ecommerce/images/icons/AccountPage';
+	public static $icon = 'ecommerce_corporate_account/images/icons/CorporateAccountPage';
 
 	/**
 	 * standard SS method

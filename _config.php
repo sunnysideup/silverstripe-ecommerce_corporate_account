@@ -30,7 +30,7 @@ Order:
 //EcommerceCorporateGroupBuyableDecorator::set_only_approved_customers_can_purchase(true);
 //---
 //EcommerceCorporateGroupGroupDecorator::set_name("approved shop customers");
-//EcommerceCorporateGroupGroupDecorator::set_permission_code("approvedshopcustomers");
+//EcommerceCorporateGroupGroupDecorator::set_code("approvedshopcustomers");
 //EcommerceCorporateGroupGroupDecorator::set_permission_code("APPROVEDSHOPCUSTOMER");
 //===================---------------- END ecommerce_corporate_account MODULE ----------------===================
 
