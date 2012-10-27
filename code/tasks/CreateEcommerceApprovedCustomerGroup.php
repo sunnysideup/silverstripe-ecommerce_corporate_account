@@ -69,7 +69,7 @@ class CreateEcommerceApprovedCustomerGroup_AdminDecorator extends Extension{
 		"createecommerceapprovedcustomergroup_sortgroups" => true
 	);
 
-	function updateEcommerceDevMenuEcommerceSetup(&$buildTasks){
+	function updateEcommerceDevMenuEcommerceSetup($buildTasks){
 		$buildTasks[] = "createecommerceapprovedcustomergroup";
 		$buildTasks[] = "createecommerceapprovedcustomergroup_sortgroups";
 		//$buildTasks[] = "deleteobsoletemoduleowners";
