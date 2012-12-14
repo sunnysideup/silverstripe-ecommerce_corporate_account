@@ -47,10 +47,12 @@ class OrderMarker extends OrderModifier {
 	 * @return void
 	 */
 	public function runUpdate($force = true) {
+		if (isset($_GET['debug_profile'])) Profiler::mark('OrderMaker::runUpdate');
 		if(!$this->IsRemoved()) {
 			$this->checkField("OrderFor");
 			parent::runUpdate($force);
 		}
+		if (isset($_GET['debug_profile'])) Profiler::unmark('OrderMaker::runUpdate');
 	}
 
 	/**
