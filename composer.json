@@ -1,5 +1,5 @@
 {
-	"name": "silverstripe/ecommerce_corporate_account",
+	"name": "sunnysideup/ecommerce_corporate_account",
 	"type": "silverstripe-module",
 	"description": "add corporate account functionality to your Silverstripe e-commerce",
 	"homepage": "http://www.silverstripe-ecommerce.com",
