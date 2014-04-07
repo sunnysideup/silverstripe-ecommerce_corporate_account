@@ -1,7 +1,6 @@
-###############################################
+
 Ecommerce Corporate Account
-Pre 0.1 proof of concept
-###############################################
+================================================================================
 
 Adds functionality to e-commerce that is typical
 for a corporate account (business to business sales):
