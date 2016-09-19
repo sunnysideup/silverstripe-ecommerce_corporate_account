@@ -12,10 +12,10 @@
 /**
  * ADD TO ECOMMERCE.YAML:
 Order:
-	modifiers: [
-		...
-		OrderMarker
-	]
+    modifiers: [
+        ...
+        OrderMarker
+    ]
 */
 //Object::add_extension("EcommerceDatabaseAdmin", "CreateEcommerceApprovedCustomerGroup_AdminDecorator");
 //Object::add_extension("Product", "EcommerceCorporateGroupBuyableDecorator");
@@ -33,4 +33,3 @@ Order:
 //EcommerceCorporateGroupGroupDecorator::set_code("approvedshopcustomers");
 //EcommerceCorporateGroupGroupDecorator::set_permission_code("APPROVEDSHOPCUSTOMER");
 //===================---------------- END ecommerce_corporate_account MODULE ----------------===================
-
